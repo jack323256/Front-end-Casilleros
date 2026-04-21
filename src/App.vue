@@ -432,12 +432,12 @@
 import axios from 'axios'
 import { toast } from 'vue3-toastify'
 
-const API_URL = '/assignments'
+const API_URL = 'https://back-end-casilleros.onrender.com/assignments'
 
 export default {
   data() {
     return {
-      UPLOAD_URL: '/uploads/',
+      UPLOAD_URL: 'https://back-end-casilleros.onrender.com/uploads/',
       assignments: [],
       search: '',
       showModal: false,
