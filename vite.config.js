@@ -5,35 +5,34 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     proxy: {
-      // Rutas específicas del proyecto antiguo (si aún las usas)
+      // Rutas específicas del proyecto antiguo
       '^/assignments.*': {
-        target: 'http://localhost:5000',
+        target: 'https://back-end-casilleros.onrender.com', // <-- Sin slash final
         changeOrigin: true,
         secure: false,
       },
       '^/bitacora.*': {
-        target: 'http://localhost:5000',
+        target: 'https://back-end-casilleros.onrender.com',
         changeOrigin: true,
         secure: false,
       },
       '^/horarios.*': {
-        target: 'http://localhost:5000',
+        target: 'https://back-end-casilleros.onrender.com',
         changeOrigin: true,
         secure: false,
       },
 
       // === IMPORTANTE: Proxy para todo el namespace /manto ===
       '/manto': {
-        target: 'http://127.0.0.1:5000',
+        target: 'https://back-end-casilleros.onrender.com',
         changeOrigin: true,
         secure: false,
-        // Esto es clave: reescribe /manto/... → /manto/...
         rewrite: (path) => path.replace(/^\/manto/, '/manto')
       },
 
       // Imágenes subidas
       '/uploads': {
-        target: 'http://127.0.0.1:5000',  // Mejor usar el mismo que Flask
+        target: 'https://back-end-casilleros.onrender.com', 
         changeOrigin: true,
         secure: false,
       },
