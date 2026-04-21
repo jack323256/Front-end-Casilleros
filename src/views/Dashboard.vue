@@ -280,8 +280,8 @@ import { toast } from 'vue3-toastify'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const UPLOAD_URL = '/uploads/'
-const API_URL = '/assignments'
+const UPLOAD_URL = 'https://back-end-casilleros.onrender.com/uploads/'
+const API_URL = 'https://back-end-casilleros.onrender.com/assignments'
 
 const TOTAL_CASILLEROS = 165
 const CASILLEROS_POR_PARED = 85
