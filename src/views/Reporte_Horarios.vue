@@ -95,7 +95,9 @@
       </div>
 
       <footer class="d-flex justify-content-between align-items-end mt-1 pt-1 w-100">
-        <h3 class="fw-bold fst-italic texto-verde-oscuro m-0 pb-1" style="font-size: 1.1rem;">HORARIO ESCOLAR ENERO-ABRIL 2026</h3>
+        <h3 class="fw-bold fst-italic texto-verde-oscuro m-0 pb-1" style="font-size: 1.1rem;">
+            {{ cuatrimestreAutomatico }}
+        </h3>
         <img src="/logos/Logo_nuevo.png" alt="UTXJ" class="logo-bottom" @error="fallbackLogo">
       </footer>
     </div>
@@ -301,6 +303,25 @@ const matrizHorario = computed(() => {
 const abrirDetalle = (clase) => { if (clase) { claseSeleccionada.value = clase; modalVisible.value = true; } };
 const imprimirPDF = () => { window.print(); };
 const fallbackLogo = (e) => { e.target.src = 'https://via.placeholder.com/150?text=Logo'; };
+
+// 2. LOGICA DE CUATRIMESTRE AUTOMÁTICO (Agrégalo aquí al final)
+const cuatrimestreAutomatico = computed(() => {
+  const fechaActual = new Date();
+  const mes = fechaActual.getMonth(); // Enero es 0
+  const año = fechaActual.getFullYear();
+  
+  let periodo = "";
+
+  if (mes >= 0 && mes <= 3) {
+    periodo = "ENERO-ABRIL";
+  } else if (mes >= 4 && mes <= 7) {
+    periodo = "MAYO-AGOSTO";
+  } else {
+    periodo = "SEPTIEMBRE-DICIEMBRE";
+  }
+
+  return `HORARIO ESCOLAR ${periodo} ${año}`;
+});
 
 onMounted(() => {
   if (route.query.espacio) espacioSeleccionado.value = route.query.espacio;
