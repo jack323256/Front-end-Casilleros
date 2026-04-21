@@ -5,8 +5,8 @@
       <div class="container-fluid">
         <!-- Título / Logo -->
 <router-link to="/" class="navbar-brand fw-bold d-flex align-items-center">
-  <img 
-    src="../logos/somos_mantenimeinto.png" 
+<img 
+    src="/logos/somos_mantenimiento.png" 
     alt="Logo Mantenimiento" 
     class="me-2 rounded bg-light shadow-sm p-1" 
     style="height: 2em; width: auto; vertical-align: middle;"
