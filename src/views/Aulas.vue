@@ -326,7 +326,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import CircularProgress from '../components/CircularProgress.vue'
 
-const API_URL = '/horarios'
+const API_URL = 'https://back-end-casilleros.onrender.com/horarios'
 
 const horarios = ref([])
 const horaActual = ref('')
