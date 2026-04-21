@@ -399,7 +399,7 @@ const laboratorios = ref([
 
 async function cargarHorarios() {
   try {
-    const res = await axios.get('/horarios')
+    const res = await axios.get('https://back-end-casilleros.onrender.com/horarios')
     horarios.value = res.data || []
   } catch (err) {
     console.warn('Horarios no disponibles (backend caído o error):', err.message)
@@ -464,13 +464,13 @@ function formatearHora(iso) {
 
 async function cargarDatos() {
   try {
-    const resSesiones = await axios.get('http://127.0.0.1:5000/manto/sesiones')
+    const resSesiones = await axios.get('https://back-end-casilleros.onrender.com/manto/sesiones')
     sesionesActivas.value = resSesiones.data || []
 
     tarjetasActivas.value = {}
     tarjetasRemediales.value = {}
 
-    const resTarjetas = await axios.get('http://127.0.0.1:5000/manto/tarjetas')
+    const resTarjetas = await axios.get('https://back-end-casilleros.onrender.com/manto/tarjetas')
     for (const t of resTarjetas.data || []) {
       await cargarMateriales(t.id)
       const lab = t.ubicacion_trabajo || 'General'
@@ -492,7 +492,7 @@ async function cargarDatos() {
 
 async function cargarMateriales(tarjetaId) {
   try {
-    const res = await axios.get(`http://127.0.0.1:5000/manto/tarjeta-material/tarjeta/${tarjetaId}`)
+    const res = await axios.get(`https://back-end-casilleros.onrender.com/manto/tarjeta-material/tarjeta/${tarjetaId}`)
     materialesTarjeta.value[tarjetaId] = res.data || []
   } catch (err) {
     materialesTarjeta.value[tarjetaId] = []
@@ -501,7 +501,7 @@ async function cargarMateriales(tarjetaId) {
 
 async function cargarInventario() {
   try {
-    const res = await axios.get('http://127.0.0.1:5000/manto/inventario')
+    const res = await axios.get('https://back-end-casilleros.onrender.com/manto/inventario')
     inventario.value = res.data.filter(i => i.activo && i.cantidad_disponible > 0) || []
     inventarioFiltrado.value = inventario.value
     inventarioFiltradoAgregar.value = inventario.value
@@ -567,11 +567,11 @@ async function crearTarjeta() {
       responsable_actual: formTarjeta.value.responsable,
       ubicacion_trabajo: labSeleccionado.value.nombre
     }
-    const res = await axios.post('http://127.0.0.1:5000/manto/tarjetas', payload)
+    const res = await axios.post('https://back-end-casilleros.onrender.com/manto/tarjetas', payload)
     const tarjetaId = res.data.id
 
     for (const item of materialesSeleccionados.value) {
-      await axios.post(`http://127.0.0.1:5000/manto/tarjeta-material/${tarjetaId}`, {
+      await axios.post(`https://back-end-casilleros.onrender.com/manto/tarjeta-material/${tarjetaId}`, {
         inventario_id: item.id,
         cantidad: 1,
         estado_salida: 'bueno'
@@ -589,7 +589,7 @@ async function crearTarjeta() {
 async function actualizarResponsable() {
   if (!tarjetaSeleccionada.value) return
   try {
-    await axios.put(`http://127.0.0.1:5000/manto/tarjetas/${tarjetaSeleccionada.value.id}`, {
+    await axios.put(`https://back-end-casilleros.onrender.com/manto/tarjetas/${tarjetaSeleccionada.value.id}`, {
       responsable_actual: tarjetaSeleccionada.value.responsable_actual
     })
     alert('Responsable actualizado')
@@ -608,7 +608,7 @@ async function agregarMaterialATarjeta() {
   }
 
   try {
-    await axios.post(`http://127.0.0.1:5000/manto/tarjeta-material/${tarjetaSeleccionada.value.id}`, {
+    await axios.post(`https://back-end-casilleros.onrender.com/manto/tarjeta-material/${tarjetaSeleccionada.value.id}`, {
       inventario_id: item.id,
       cantidad: 1,
       estado_salida: 'bueno'
@@ -642,7 +642,7 @@ async function devolverMaterial(materialId) {
   }
 
   try {
-    await axios.put(`http://127.0.0.1:5000/manto/tarjeta-material/${materialId}/devolver`, {
+    await axios.put(`https://back-end-casilleros.onrender.com/manto/tarjeta-material/${materialId}/devolver`, {
       estado_entrada: mat.estado_entrada
     })
     alert('Material devuelto')
@@ -655,7 +655,7 @@ async function devolverMaterial(materialId) {
 async function devolverTodo(tarjetaId) {
   if (!confirm('¿Devolver todos los materiales y cerrar la tarjeta?')) return
   try {
-    await axios.put(`http://127.0.0.1:5000/manto/tarjetas/${tarjetaId}/cerrar`)
+    await axios.put(`https://back-end-casilleros.onrender.com/manto/tarjetas/${tarjetaId}/cerrar`)
     alert('Tarjeta cerrada')
     modalDetalles.value.hide()
     await cargarDatos()
