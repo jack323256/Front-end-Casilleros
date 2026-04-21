@@ -12,6 +12,7 @@
         <div class="col-md-3">
           <div class="btn-group w-100 shadow-sm">
             <button class="btn btn-sm fw-bold" :class="vistaActiva === 'individual' ? 'btn-primary' : 'btn-outline-primary'" @click="vistaActiva = 'individual'">Individual</button>
+            <button class="btn btn-sm fw-bold" :class="vistaActiva === 'grupo' ? 'btn-primary' : 'btn-outline-primary'" @click="vistaActiva = 'grupo'">Por Grupo</button>
             <button class="btn btn-sm fw-bold" :class="vistaActiva === 'matriz' ? 'btn-primary' : 'btn-outline-primary'" @click="vistaActiva = 'matriz'">Matriz General</button>
           </div>
         </div>
@@ -28,6 +29,12 @@
             </select>
           </template>
 
+          <template v-else-if="vistaActiva === 'grupo'">
+            <select v-model="grupoSeleccionado" class="form-select form-select-sm border-warning w-auto fw-bold">
+              <option v-for="grupo in gruposList" :key="grupo" :value="grupo">{{ grupo }}</option>
+            </select>
+          </template>
+
           <template v-else>
             <select v-model="diaMatriz" class="form-select form-select-sm border-success w-auto fw-bold">
               <option v-for="dia in diasList" :key="dia" :value="dia">{{ dia }}</option>
@@ -36,7 +43,7 @@
         </div>
 
         <div class="col-md-3 text-end">
-          <button v-if="vistaActiva === 'individual'" class="btn btn-sm btn-danger shadow-sm fw-bold px-3" @click="imprimirPDF">
+          <button v-if="vistaActiva !== 'matriz'" class="btn btn-sm btn-danger shadow-sm fw-bold px-3" @click="imprimirPDF">
             <i class="bi bi-printer-fill me-1"></i> Imprimir PDF
           </button>
           <button v-else class="btn btn-sm btn-success shadow-sm fw-bold px-3" @click="exportarExcel">
@@ -46,13 +53,15 @@
       </div>
     </div>
 
-    <div v-if="vistaActiva === 'individual'" class="hoja-horizontal shadow">
+    <div v-if="vistaActiva === 'individual' || vistaActiva === 'grupo'" class="hoja-horizontal shadow">
       <header class="d-flex justify-content-between align-items-start w-100 mb-1">
         <div class="d-flex flex-column align-items-start">
           <div class="barra-verde shadow-sm">
             <h2 class="fw-bold fst-italic m-0 text-white" style="font-size: 1.1rem;">Academia de Mantenimiento Industrial</h2>
           </div>
-          <h1 class="texto-dorado fw-bold fst-italic mt-1" style="margin-left: 1.5rem; font-size: 1.6rem;">{{ espacioSeleccionado }}</h1>
+          <h1 class="texto-dorado fw-bold fst-italic mt-1" style="margin-left: 1.5rem; font-size: 1.6rem;">
+            {{ vistaActiva === 'individual' ? espacioSeleccionado : 'Horario del Grupo: ' + grupoSeleccionado }}
+          </h1>
         </div>
         <img src="/logos/logo-mantenimiento.png" alt="Mascota" class="logo-top" @error="fallbackLogo">
       </header>
@@ -80,8 +89,11 @@
                       :class="{ 'has-class': row.celdas[dia].clase }"
                       @click="abrirDetalle(row.celdas[dia].clase)">
                     <div v-if="row.celdas[dia].clase" class="clase-info">
-                      <div class="texto-grupo-color" :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">
+                      <div v-if="vistaActiva === 'individual'" class="texto-grupo-color" :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">
                         {{ row.celdas[dia].clase.grupo }}
+                      </div>
+                      <div v-else class="fw-bold text-primary" style="font-size: 0.7rem;">
+                        {{ row.celdas[dia].clase.laboratorio }}
                       </div>
                       <div class="text-dark fs-docente lh-1 mt-1">{{ row.celdas[dia].clase.docente }}</div>
                       <div class="fw-bold text-dark fs-materia text-uppercase lh-1 mt-1">{{ row.celdas[dia].clase.materia }}</div>
@@ -96,7 +108,7 @@
 
       <footer class="d-flex justify-content-between align-items-end mt-1 pt-1 w-100">
         <h3 class="fw-bold fst-italic texto-verde-oscuro m-0 pb-1" style="font-size: 1.1rem;">
-            {{ cuatrimestreAutomatico }}
+          {{ cuatrimestreAutomatico }}
         </h3>
         <img src="/logos/Logo_nuevo.png" alt="UTXJ" class="logo-bottom" @error="fallbackLogo">
       </footer>
@@ -124,7 +136,6 @@
           <tbody>
             <tr v-for="bloque in bloquesHorarios" :key="bloque.inicio">
               <td class="fw-bold bg-light small">{{ bloque.inicio }} - {{ bloque.fin }}</td>
-              
               <td v-for="espacio in [...laboratoriosList, ...aulasList.slice(0,6)]" :key="espacio" 
                   class="celda-matriz" :class="{'bg-receso-matriz': bloque.tipo === 'receso'}">
                 <template v-if="bloque.tipo === 'receso'">RECESO</template>
@@ -143,7 +154,7 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg border-0 overflow-hidden">
           <div class="modal-header bg-primary text-white border-0">
-            <h5 class="modal-title fw-bold"><i class="bi bi-info-circle-fill me-2"></i> Detalles de la Asignación</h5>
+            <h5 class="modal-title fw-bold"><i class="bi bi-info-circle-fill me-2"></i> Detalles</h5>
             <button type="button" class="btn-close btn-close-white" @click="modalVisible = false"></button>
           </div>
           <div class="modal-body p-4 text-center bg-white">
@@ -154,12 +165,12 @@
                 <img :src="fotoDocente(claseSeleccionada.docente) || '/logos/default-docente.png'" @error="$event.target.src = '/logos/default-docente.png'"
                   class="rounded-circle shadow bg-white mb-2" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid white;">
                 <div>
-                  <div class="text-muted small fw-bold text-uppercase mb-1">Docente Asignado</div>
+                  <div class="text-muted small fw-bold text-uppercase mb-1">Docente</div>
                   <div class="fw-bold text-dark fs-5 lh-1">{{ claseSeleccionada.docente }}</div>
                 </div>
               </div>
               <div class="ps-3">
-                <p class="mb-2"><i class="bi bi-clock-fill text-warning me-2 fs-5 align-middle"></i> <strong>Horario:</strong> {{ claseSeleccionada.horaInicio }} a {{ claseSeleccionada.horaFin }} hrs</p>
+                <p class="mb-2"><i class="bi bi-clock-fill text-warning me-2 fs-5 align-middle"></i> <strong>Horario:</strong> {{ claseSeleccionada.horaInicio }} a {{ claseSeleccionada.horaFin }}</p>
                 <p class="mb-0"><i class="bi bi-door-open-fill text-success me-2 fs-5 align-middle"></i> <strong>Lugar:</strong> {{ claseSeleccionada.laboratorio }}</p>
               </div>
             </div>
@@ -178,15 +189,17 @@
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
-import * as XLSX from 'xlsx'; // Importación de la librería
+import * as XLSX from 'xlsx';
 
 const route = useRoute();
+// RECUERDA: Cambiar a la URL de Render para producción
 const API_URL = 'https://back-end-casilleros.onrender.com/horarios';
 const horarios = ref([]);
 
 // CONTROL DE VISTAS
 const vistaActiva = ref('individual');
 const diaMatriz = ref('Lunes');
+const grupoSeleccionado = ref('');
 
 const laboratoriosList = [
   'Lab de Automatización - Pesado I', 'Lab Eléctrica - Pesado I', 'Lab Electrónica - Pesado I', 
@@ -200,7 +213,6 @@ const aulasList = [
 
 const espacioSeleccionado = ref(laboratoriosList[0]);
 const diasList = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
-
 const modalVisible = ref(false);
 const claseSeleccionada = ref(null);
 
@@ -221,26 +233,28 @@ const bloquesHorarios = [
   { inicio: '19:30', fin: '20:30', tipo: 'clase' }
 ];
 
-// --- LOGICA DE EXCEL ---
+// LISTA DINÁMICA DE GRUPOS
+const gruposList = computed(() => {
+  const lista = horarios.value.map(h => h.grupo).filter(g => g);
+  return [...new Set(lista)].sort();
+});
+
+// LÓGICA DE EXCEL
 const exportarExcel = () => {
   const encabezadoSuperior = ["HORA", "EDIFICIO PESADO 1 y 2", "", "", "", "", "", "", "DOCENCIA III (PB)"];
   const encabezadoEspacios = ["", ...laboratoriosList, ...aulasList.slice(0, 6)];
-
   const cuerpoMatriz = bloquesHorarios.map(b => {
     const fila = [ `${b.inicio} - ${b.fin}` ];
     const todosLosEspacios = [...laboratoriosList, ...aulasList.slice(0, 6)];
-    
     todosLosEspacios.forEach(espacio => {
-      if (b.tipo === 'receso') {
-        fila.push("RECESO");
-      } else {
+      if (b.tipo === 'receso') fila.push("RECESO");
+      else {
         const clases = buscarClaseMatriz(diaMatriz.value, espacio, b.inicio);
         fila.push(clases.length > 0 ? `${clases[0].grupo} - ${clases[0].materia}` : "");
       }
     });
     return fila;
   });
-
   const ws = XLSX.utils.aoa_to_sheet([encabezadoSuperior, encabezadoEspacios, ...cuerpoMatriz]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Matriz");
@@ -251,9 +265,8 @@ const buscarClaseMatriz = (dia, espacio, inicio) => {
   return horarios.value.filter(c => c.dia === dia && c.laboratorio === espacio && c.horaInicio <= inicio && c.horaFin > inicio);
 };
 
-// --- LOGICA EXISTENTE ---
+// COLORES Y LOGOS
 const paletaColores = ['#1565C0', '#00695C', '#7B1FA2', '#D84315', '#C62828', '#283593', '#2E7D32', '#4E342E', '#37474F', '#AD1457', '#0277BD', '#4527A0'];
-
 const getColorForGrupo = (grupo) => {
   if (!grupo) return '#444444';
   let hash = 0;
@@ -274,6 +287,7 @@ const loadHorarios = async () => {
   } catch (err) { console.error(err); }
 };
 
+// MATRIZ HORARIO DINÁMICA (INDIVIDUAL O GRUPO)
 const matrizHorario = computed(() => {
   const matrix = [];
   for (let r = 0; r < bloquesHorarios.length; r++) {
@@ -281,7 +295,13 @@ const matrizHorario = computed(() => {
     const row = { bloque, celdas: {} };
     if (bloque.tipo !== 'receso') {
       for (const dia of diasList) {
-        const claseInicio = horarios.value.find(c => c.dia === dia && c.laboratorio === espacioSeleccionado.value && c.horaInicio === bloque.inicio);
+        let claseInicio;
+        if (vistaActiva.value === 'individual') {
+          claseInicio = horarios.value.find(c => c.dia === dia && c.laboratorio === espacioSeleccionado.value && c.horaInicio === bloque.inicio);
+        } else {
+          claseInicio = horarios.value.find(c => c.dia === dia && c.grupo === grupoSeleccionado.value && c.horaInicio === bloque.inicio);
+        }
+
         if (claseInicio) {
           let rowspan = 1;
           for (let nextR = r + 1; nextR < bloquesHorarios.length; nextR++) {
@@ -290,7 +310,12 @@ const matrizHorario = computed(() => {
           }
           row.celdas[dia] = { render: true, rowspan, clase: claseInicio };
         } else {
-          const claseAnterior = horarios.value.find(c => c.dia === dia && c.laboratorio === espacioSeleccionado.value && c.horaInicio < bloque.inicio && c.horaFin > bloque.inicio);
+          let claseAnterior;
+          if (vistaActiva.value === 'individual') {
+            claseAnterior = horarios.value.find(c => c.dia === dia && c.laboratorio === espacioSeleccionado.value && c.horaInicio < bloque.inicio && c.horaFin > bloque.inicio);
+          } else {
+            claseAnterior = horarios.value.find(c => c.dia === dia && c.grupo === grupoSeleccionado.value && c.horaInicio < bloque.inicio && c.horaFin > bloque.inicio);
+          }
           row.celdas[dia] = claseAnterior ? { render: false } : { render: true, rowspan: 1, clase: null };
         }
       }
@@ -300,39 +325,28 @@ const matrizHorario = computed(() => {
   return matrix;
 });
 
+// PERIODOS AUTOMÁTICOS
+const cuatrimestreAutomatico = computed(() => {
+  const fechaActual = new Date();
+  const mes = fechaActual.getMonth();
+  const año = fechaActual.getFullYear();
+  let periodo = (mes >= 0 && mes <= 3) ? "ENERO-ABRIL" : (mes >= 4 && mes <= 7) ? "MAYO-AGOSTO" : "SEPTIEMBRE-DICIEMBRE";
+  return `HORARIO ESCOLAR ${periodo} ${año}`;
+});
+
 const abrirDetalle = (clase) => { if (clase) { claseSeleccionada.value = clase; modalVisible.value = true; } };
 const imprimirPDF = () => { window.print(); };
 const fallbackLogo = (e) => { e.target.src = 'https://via.placeholder.com/150?text=Logo'; };
 
-// 2. LOGICA DE CUATRIMESTRE AUTOMÁTICO (Agrégalo aquí al final)
-const cuatrimestreAutomatico = computed(() => {
-  const fechaActual = new Date();
-  const mes = fechaActual.getMonth(); // Enero es 0
-  const año = fechaActual.getFullYear();
-  
-  let periodo = "";
-
-  if (mes >= 0 && mes <= 3) {
-    periodo = "ENERO-ABRIL";
-  } else if (mes >= 4 && mes <= 7) {
-    periodo = "MAYO-AGOSTO";
-  } else {
-    periodo = "SEPTIEMBRE-DICIEMBRE";
-  }
-
-  return `HORARIO ESCOLAR ${periodo} ${año}`;
-});
-
-onMounted(() => {
+onMounted(async () => {
   if (route.query.espacio) espacioSeleccionado.value = route.query.espacio;
-  loadHorarios();
+  await loadHorarios();
+  if (gruposList.value.length > 0) grupoSeleccionado.value = gruposList.value[0];
 });
 </script>
 
 <style scoped>
-/* TU CSS ORIGINAL SE MANTIENE INTACTO */
 .reporte-bg { background-color: #555; }
-:root { --verde-utxj: #005b4f; --dorado-utxj: #b58c2a; }
 .hoja-horizontal { background: white; width: 27.94cm; height: 21.59cm; margin: 0 auto; box-sizing: border-box; padding: 6mm 10mm; display: flex; flex-direction: column; overflow: hidden; }
 .barra-verde { background-color: #005b4f; padding: 4px 20px 4px 15px; border-radius: 0 20px 20px 0; margin-left: -10mm; }
 .texto-dorado { color: #b58c2a; letter-spacing: -1px; }
@@ -343,22 +357,19 @@ onMounted(() => {
 .header-verde { background-color: #005b4f !important; color: white !important; font-size: 0.75rem; text-transform: uppercase; padding: 4px !important; }
 .bg-hora { background-color: #cfd8dc !important; font-size: 0.65rem; width: 85px;}
 .bg-receso { background-color: #e0e0e0 !important; font-size: 0.85rem; }
-.celda-clase { vertical-align: middle; overflow: hidden; transition: background-color 0.2s ease, transform 0.1s ease; }
+.celda-clase { vertical-align: middle; overflow: hidden; transition: background-color 0.2s ease; }
 .has-class { cursor: pointer; }
-.has-class:hover { background-color: #e2e8f0 !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
-.clases-wrapper { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; }
+.has-class:hover { background-color: #f1f5f9 !important; }
 .clase-info { text-align: center; line-height: 1.1; padding: 2px 0; width: 100%; }
-.texto-grupo-color { font-size: 0.85rem; font-weight: 900; margin-bottom: 2px; letter-spacing: 0.5px; }
-.fs-docente { font-size: 0.7rem; color: #222; margin-bottom: 2px; font-weight: 500;}
+.texto-grupo-color { font-size: 0.85rem; font-weight: 900; margin-bottom: 2px; }
+.fs-docente { font-size: 0.7rem; color: #222; font-weight: 500;}
 .fs-materia { font-size: 0.75rem; color: #005b4f; }
-.texto-verde-oscuro { color: #005b4f; letter-spacing: -0.5px; }
+.texto-verde-oscuro { color: #005b4f; }
 .logo-bottom { height: 45px; object-fit: contain; }
-
-/* CSS NUEVO PARA LA MATRIZ */
 .matriz-general-container { width: 98%; max-width: 1500px; min-height: 85vh; border-radius: 8px; }
 .matriz-table { table-layout: fixed; font-size: 0.55rem; }
 .th-matriz { font-size: 0.5rem; padding: 2px !important; background: #f8f9fa; }
-.celda-matriz { height: 40px; padding: 1px !important; line-height: 1.1; word-wrap: break-word; }
+.celda-matriz { height: 40px; padding: 1px !important; line-height: 1.1; }
 .x-small-matriz { font-size: 0.45rem; color: #555; }
 .bg-receso-matriz { background-color: #eee !important; color: #999; font-weight: bold; font-size: 0.5rem; }
 
@@ -366,7 +377,6 @@ onMounted(() => {
   @page { size: letter landscape; margin: 0; }
   body, html { margin: 0 !important; padding: 0 !important; background: white !important; }
   .no-print { display: none !important; }
-  .hoja-horizontal { width: 100vw !important; height: 100vh !important; margin: 0 !important; border: none !important; box-shadow: none !important; padding: 5mm 10mm !important; page-break-after: avoid; page-break-before: avoid; }
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .hoja-horizontal { width: 100vw !important; height: 100vh !important; margin: 0 !important; border: none !important; box-shadow: none !important; padding: 5mm 10mm !important; }
 }
 </style>
