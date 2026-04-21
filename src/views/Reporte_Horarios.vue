@@ -179,7 +179,7 @@ import { useRoute } from 'vue-router';
 import * as XLSX from 'xlsx'; // Importación de la librería
 
 const route = useRoute();
-const API_URL = 'http://localhost:5000/horarios';
+const API_URL = 'https://back-end-casilleros.onrender.com';
 const horarios = ref([]);
 
 // CONTROL DE VISTAS
