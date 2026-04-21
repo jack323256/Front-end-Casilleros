@@ -168,8 +168,8 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { toast } from 'vue3-toastify'
 
-const API_URL = '/bitacora'
-const UPLOAD_URL = '/uploads/'
+const API_URL = 'https://back-end-casilleros.onrender.com/bitacora'
+const UPLOAD_URL = 'https://back-end-casilleros.onrender.com/uploads/'
 
 const logs = ref([])
 const search = ref('')
