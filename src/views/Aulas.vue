@@ -154,79 +154,96 @@
             </div>
 
             <!-- Botón agregar clase -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h5 class="mb-0">Clases del día</h5>
-              <button 
-                class="btn btn-success rounded-circle shadow" 
-                @click="showForm = !showForm" 
-                style="width: 50px; height: 50px;"
-              >
-                <i class="bi" :class="showForm ? 'bi-dash' : 'bi-plus'" style="font-size: 1.5rem;"></i>
-              </button>
+            <div class="mb-4 border-bottom pb-2">
+              <h5 class="mb-0 fw-bold text-secondary">Clases Programadas</h5>
             </div>
 
             <!-- Formulario colapsable -->
-            <transition name="fade">
-              <div v-if="showForm" class="card mb-4 border-primary shadow">
-                <div class="card-header bg-primary text-white">
-                  <h6 class="mb-0">{{ editMode ? 'Editar Clase' : 'Agregar Nueva Clase' }}</h6>
-                </div>
-                <div class="card-body">
-                  <form @submit.prevent="saveClase">
-                    <div class="row g-3">
-                      <div class="col-12 col-md-4">
-                        <label class="form-label">Día</label>
-                        <select v-model="form.dia" class="form-select" required>
-                          <option v-for="dia in dias" :value="dia">{{ dia }}</option>
-                        </select>
-                      </div>
-                      <div class="col-12 col-md-4">
-                        <label class="form-label">Laboratorio</label>
-                        <select v-model="form.laboratorio" class="form-select" required>
-                          <option v-for="lab in laboratorios" :value="lab.nombre">{{ lab.nombre }}</option>
-                        </select>
-                      </div>
-                      <div class="col-12 col-md-4">
-                        <label class="form-label">Materia</label>
-                        <input v-model="form.materia" class="form-control" required />
-                      </div>
-                      <div class="col-12 col-md-4">
-                        <label class="form-label">Grupo</label>
-                        <input v-model="form.grupo" class="form-control" required placeholder="Ej: 2A MP" />
-                      </div>
-                      <div class="col-12 col-md-4">
-                        <label class="form-label">Docente</label>
-                        <input v-model="form.docente" class="form-control" required list="docentes-list" />
-                        <datalist id="docentes-list">
-                          <option v-for="doc in docentesUnicos" :value="doc" />
-                        </datalist>
-                      </div>
-                      <div class="col-6 col-md-2">
-                        <label class="form-label">Inicio</label>
-                        <input v-model="form.horaInicio" type="time" class="form-control" required />
-                      </div>
-                      <div class="col-6 col-md-2">
-                        <label class="form-label">Fin</label>
-                        <input v-model="form.horaFin" type="time" class="form-control" required />
-                      </div>
-                      <div class="col-12 text-end mt-3">
-                        <button type="button" class="btn btn-secondary me-2" @click="cancelEdit" v-if="editMode">Cancelar</button>
-                        <button type="submit" class="btn btn-success px-4">
-                          {{ editMode ? 'Actualizar' : 'Guardar' }}
-                        </button>
-                      </div>
+<transition name="fade">
+              <div v-if="showForm" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.75); z-index: 1060;">
+                <div class="modal-dialog modal-dialog-centered modal-xl">
+                  <div class="modal-content shadow-lg border-0">
+                    <div class="modal-header bg-primary text-white">
+                      <h5 class="modal-title fw-bold">
+                        <i class="bi" :class="editMode ? 'bi-pencil-square' : 'bi-plus-circle'"></i>
+                        {{ editMode ? 'Editar Clase' : 'Agregar Nueva Clase' }}
+                      </h5>
+                      <button type="button" class="btn-close btn-close-white" @click="cerrarFormulario"></button>
                     </div>
-                  </form>
+                    <div class="modal-body p-4">
+                      <form @submit.prevent="saveClase">
+                        <div class="row g-3">
+                          
+                          <div class="col-12 col-md-4">
+                            <label class="form-label fw-bold">Día</label>
+                            <select v-model="form.dia" class="form-select" required>
+                              <option v-for="dia in dias" :value="dia">{{ dia }}</option>
+                            </select>
+                          </div>
+                          <div class="col-12 col-md-4">
+                            <label class="form-label fw-bold">Laboratorio</label>
+                            <select v-model="form.laboratorio" class="form-select" required>
+                              <option v-for="lab in laboratorios" :value="lab.nombre">{{ lab.nombre }}</option>
+                            </select>
+                          </div>
+                          <div class="col-12 col-md-4">
+                            <label class="form-label fw-bold">Materia</label>
+                            <input v-model="form.materia" class="form-control" required />
+                          </div>
+                          
+                          <div class="col-12 col-md-3">
+                            <label class="form-label fw-bold">Grupo</label>
+                            <input v-model="form.grupo" class="form-control" required placeholder="Ej: 2A MP" />
+                          </div>
+                          <div class="col-12 col-md-3">
+                            <label class="form-label fw-bold">Docente</label>
+                            <select v-model="form.docente" class="form-select" required>
+                              <option value="" disabled selected>Selecciona un docente...</option>
+                              <option v-for="doc in listaMaestrosDirectorio" :key="doc" :value="doc">{{ doc }}</option>
+                            </select>
+                          </div>
+                          <div class="col-6 col-md-3">
+                            <label class="form-label fw-bold">Inicio</label>
+                            <input v-model="form.horaInicio" type="time" class="form-control" required />
+                          </div>
+                          <div class="col-6 col-md-3">
+                            <label class="form-label fw-bold">Fin</label>
+                            <input v-model="form.horaFin" type="time" class="form-control" required />
+                          </div>
+                          
+                          <div class="col-12 text-end mt-4 pt-3 border-top">
+                            <button type="button" class="btn btn-secondary me-2 px-4" @click="cerrarFormulario">Cancelar</button>
+                            <button type="submit" class="btn btn-success px-4 fw-bold">
+                              <i class="bi" :class="editMode ? 'bi-check-circle' : 'bi-save'"></i>
+                              {{ editMode ? 'Actualizar' : 'Guardar' }}
+                            </button>
+                          </div>
+                          
+                        </div>
+                      </form>
+                    </div>
+                  </div>
                 </div>
               </div>
             </transition>
 
             <!-- Tabla de clases por laboratorio (con iconos) -->
             <div class="mt-4">
-              <div v-for="lab in laboratorios" :key="lab.nombre" class="mb-5">
-                <div class="d-flex align-items-center mb-3">
-                  <i :class="lab.icon" class="me-3 text-primary" style="font-size: 2rem;"></i>
-                  <h5 class="mb-0 fw-bold" :style="{ color: lab.color }">{{ lab.nombre }}</h5>
+              <div v-for="lab in laboratorios" :key="lab.nombre" class="mb-5 bg-white p-3 rounded shadow-sm border">
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                  <div class="d-flex align-items-center">
+                    <i :class="lab.icon" class="me-3 text-primary" style="font-size: 2rem;"></i>
+                    <h5 class="mb-0 fw-bold" :style="{ color: lab.color }">{{ lab.nombre }}</h5>
+                  </div>
+                  
+                  <button 
+                    class="btn btn-success btn-sm rounded-circle shadow-sm d-flex justify-content-center align-items-center" 
+                    @click="abrirFormularioNuevo(lab.nombre)" 
+                    style="width: 35px; height: 35px;"
+                    title="Agregar clase a este espacio"
+                  >
+                    <i class="bi bi-plus fs-5"></i>
+                  </button>
                 </div>
 
                 <div class="table-responsive">
@@ -409,7 +426,23 @@ const form = ref({
   horaFin: ''
 })
 
-const docentesUnicos = computed(() => [...new Set(horarios.value.map(c => c.docente))].sort())
+// --- ESCÁNER DE IMÁGENES DE DOCENTES ---
+// Vite lee automáticamente todos los archivos png, jpg y jpeg de esta carpeta
+const imagenesDocentes = import.meta.glob('/public/maestros_manto/*.{png,jpg,jpeg}');
+
+const listaMaestrosDirectorio = computed(() => {
+  const nombres = [];
+  for (const path in imagenesDocentes) {
+    // 1. Extrae el nombre del archivo (ej. "Blas_Sanchez_Luis_Angel.png" -> "Blas_Sanchez_Luis_Angel")
+    let nombreArchivo = path.split('/').pop().replace(/\.[^/.]+$/, "");
+    
+    // 2. Reemplaza los guiones bajos por espacios (ej. "Blas Sanchez Luis Angel")
+    let nombreLimpio = nombreArchivo.replace(/_/g, ' ');
+    
+    nombres.push(nombreLimpio);
+  }
+  return nombres.sort(); // Los ordena alfabéticamente
+});
 
 function detectarCarrera(grupo) {
   if (!grupo) return 'MI'
@@ -632,6 +665,23 @@ function cancelEdit() {
     horaInicio: '',
     horaFin: ''
   }
+}
+
+
+function abrirFormularioNuevo(nombreLaboratorio = null) {
+  cancelEdit(); // Resetea el formulario por si había algo escrito
+  
+  // Si le dimos clic al botón de un laboratorio específico, lo pre-selecciona
+  if (nombreLaboratorio) {
+    form.value.laboratorio = nombreLaboratorio;
+  }
+  
+  showForm.value = true; // Abre el modal
+}
+
+function cerrarFormulario() {
+  showForm.value = false;
+  cancelEdit(); // Resetea todo a blanco
 }
 
 
