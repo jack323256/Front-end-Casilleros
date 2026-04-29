@@ -283,7 +283,7 @@ const router = useRouter()
 const UPLOAD_URL = 'https://back-end-casilleros.onrender.com/uploads/'
 const API_URL = 'https://back-end-casilleros.onrender.com/assignments'
 
-const TOTAL_CASILLEROS = 165
+const TOTAL_CASILLEROS = 170
 const CASILLEROS_POR_PARED = 85
 
 const assignments = ref([])
