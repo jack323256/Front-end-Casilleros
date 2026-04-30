@@ -197,14 +197,14 @@
                     </td>
                     <td class="d-none d-lg-table-cell text-center">
                       <div v-if="item.foto_credencial">
-                        <img 
-                          :src="UPLOAD_URL + item.foto_credencial" 
-                          class="img-thumbnail cursor-pointer" 
-                          style="width: 60px; height: 60px; object-fit: cover;" 
-                          @click="openImageModal(UPLOAD_URL + item.foto_credencial)"
-                          alt="Credencial"
-                          title="Clic para ampliar"
-                        />
+                      <img 
+                        :src="obtenerUrlImagen(item.foto_credencial)" 
+                        class="img-thumbnail cursor-pointer" 
+                        style="width: 60px; height: 60px; object-fit: cover;" 
+                        @click="openImageModal(obtenerUrlImagen(item.foto_credencial))"
+                        alt="Credencial"
+                        title="Clic para ampliar"
+                      />
                       </div>
                       <div v-else class="text-muted">
                         <i class="bi bi-person-circle fs-3"></i><br>
@@ -380,7 +380,7 @@
                       <input type="file" @change="onFileChange($event, 'foto_credencial')" class="form-control" accept="image/*" />
                       <div class="mt-2 text-center">
                         <img v-if="previewCredencial" :src="previewCredencial" class="img-thumbnail rounded" style="max-height: 200px;" />
-                        <img v-else-if="form.foto_credencial" :src="UPLOAD_URL + form.foto_credencial" class="img-thumbnail rounded" style="max-height: 200px;" />
+                        <img v-else-if="form.foto_credencial" :src="obtenerUrlImagen(form.foto_credencial)" class="img-thumbnail rounded" style="max-height: 200px;" />
                       </div>
                     </div>
                     <div class="col-12 col-md-6">
@@ -388,7 +388,7 @@
                       <input type="file" @change="onFileChange($event, 'foto_casillero')" class="form-control" accept="image/*" />
                       <div class="mt-2 text-center">
                         <img v-if="previewCasillero" :src="previewCasillero" class="img-thumbnail rounded" style="max-height: 200px;" />
-                        <img v-else-if="form.foto_casillero" :src="UPLOAD_URL + form.foto_casillero" class="img-thumbnail rounded" style="max-height: 200px;" />
+                        <img v-else-if="form.foto_casillero" :src="obtenerUrlImagen(form.foto_casillero)" class="img-thumbnail rounded" style="max-height: 200px;" />
                       </div>
                     </div>
                   </div>
@@ -513,6 +513,17 @@ export default {
     this.form.periodo = this.periodosDisponibles[2].value
   },
   methods: {
+
+    obtenerUrlImagen(rutaFoto) {
+      if (!rutaFoto) return '';
+      // Si la foto ya viene de Cloudinary (empieza con http)
+      if (rutaFoto.startsWith('http://') || rutaFoto.startsWith('https://')) {
+        return rutaFoto;
+      }
+      // Si es una foto viejita guardada en Render
+      return this.UPLOAD_URL + rutaFoto;
+    },
+
     closeNavbar() {
       const navbarCollapse = document.getElementById('navbarNav')
       if (navbarCollapse && navbarCollapse.classList.contains('show')) {
@@ -536,8 +547,9 @@ export default {
           ...item, 
           notas: item.notas || ''
         }
-        this.previewCredencial = item.foto_credencial ? this.UPLOAD_URL + item.foto_credencial : null
-        this.previewCasillero = item.foto_casillero ? this.UPLOAD_URL + item.foto_casillero : null
+        // USAR LA NUEVA FUNCIÓN AQUÍ
+        this.previewCredencial = item.foto_credencial ? this.obtenerUrlImagen(item.foto_credencial) : null
+        this.previewCasillero = item.foto_casillero ? this.obtenerUrlImagen(item.foto_casillero) : null
       } else {
         this.form = {
           id: null,
