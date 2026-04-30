@@ -232,7 +232,7 @@
                   <input type="file" @change="onFileChange($event, 'foto_credencial')" class="form-control" accept="image/*" />
                   <div class="mt-2 text-center">
                     <img v-if="previewCredencial" :src="previewCredencial" class="img-thumbnail rounded" style="max-height: 200px;" />
-                    <img v-else-if="form.foto_credencial && typeof form.foto_credencial === 'string'" :src="UPLOAD_URL + form.foto_credencial" class="img-thumbnail rounded" style="max-height: 200px;" />
+                   <img v-else-if="form.foto_credencial && typeof form.foto_credencial === 'string'" :src="obtenerUrlImagen(form.foto_credencial)" class="img-thumbnail rounded" style="max-height: 200px;" />
                   </div>
                 </div>
                 <div class="col-12 col-md-6">
@@ -240,7 +240,7 @@
                   <input type="file" @change="onFileChange($event, 'foto_casillero')" class="form-control" accept="image/*" />
                   <div class="mt-2 text-center">
                     <img v-if="previewCasillero" :src="previewCasillero" class="img-thumbnail rounded" style="max-height: 200px;" />
-                    <img v-else-if="form.foto_casillero && typeof form.foto_casillero === 'string'" :src="UPLOAD_URL + form.foto_casillero" class="img-thumbnail rounded" style="max-height: 200px;" />
+                    <img v-else-if="form.foto_casillero && typeof form.foto_casillero === 'string'" :src="obtenerUrlImagen(form.foto_casillero)" class="img-thumbnail rounded" style="max-height: 200px;" />
                   </div>
                 </div>
               </div>
@@ -322,6 +322,16 @@ function isAlDia(item) {
   return false
 }
 
+// --- NUEVA FUNCIÓN PARA PROCESAR IMÁGENES ---
+const obtenerUrlImagen = (rutaFoto) => {
+  if (!rutaFoto) return '';
+  if (rutaFoto.startsWith('http://') || rutaFoto.startsWith('https://')) {
+    return rutaFoto;
+  }
+  return UPLOAD_URL + rutaFoto;
+};
+// --------------------------------------------
+
 // Validaciones
 const matriculaExistente = computed(() => {
   if (!form.value.matricula) return false
@@ -395,7 +405,7 @@ const columnLabels = Array.from({ length: maxCols }, (_, i) => String.fromCharCo
       const tooltipInfo = item
         ? `
           <div style="text-align:center; max-width:260px; padding:8px;">
-            ${item.foto_credencial ? `<img src="${UPLOAD_URL + item.foto_credencial}" style="width:130px; height:170px; object-fit:cover; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.5);">` : ''}
+           ${item.foto_credencial ? `<img src="${obtenerUrlImagen(item.foto_credencial)}" style="width:130px; height:170px; object-fit:cover; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.5);">` : ''}
             <div style="margin-top:10px;">
               <strong style="font-size:1.1em;">${item.alumno}</strong><br>
               Matrícula: ${item.matricula}<br>
@@ -507,13 +517,14 @@ function handleCasilleroClick(params) {
   const item = params.data.value[5]
 
   if (item) {
-    form.value = {
-      ...item,
-      notas: item.notas || ''
-    }
-    previewCredencial.value = item.foto_credencial ? UPLOAD_URL + item.foto_credencial : null
-    previewCasillero.value = item.foto_casillero ? UPLOAD_URL + item.foto_casillero : null
-  } else {
+      form.value = {
+        ...item,
+        notas: item.notas || ''
+      }
+      // USAR LA NUEVA FUNCIÓN AQUÍ:
+      previewCredencial.value = item.foto_credencial ? obtenerUrlImagen(item.foto_credencial) : null
+      previewCasillero.value = item.foto_casillero ? obtenerUrlImagen(item.foto_casillero) : null
+    } else {
     form.value = {
       id: null,
       alumno: '',
