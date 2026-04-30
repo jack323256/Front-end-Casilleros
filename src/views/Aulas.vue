@@ -406,6 +406,12 @@ const laboratorios = ref([
     logo: '/logos/electronica.png', 
     icon: 'bi bi-people-fill'  // Grupo de estudiantes
   },
+  { 
+    nombre: 'AU Virtual', 
+    color: '#395a0fff', 
+    logo: '/logos/electronica.png', 
+    icon: 'bi bi-camera2'  // Grupo de estudiantes
+  },
 ])
 
 const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
