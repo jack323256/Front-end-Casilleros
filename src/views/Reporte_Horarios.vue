@@ -220,7 +220,7 @@ const laboratoriosList = [
 const aulasList = [
   'AU 106 Docencia III', 'AU 107 Docencia III', 'AU 108 Docencia III', 
   'AU 109 Docencia III', 'AU 110 Docencia III', 'AU 111 Docencia III', 
-  'AU 406 Docencia IV', 'AU 407 Docencia IV', 'AU 408 Docencia IV'
+  'AU 406 Docencia IV', 'AU 407 Docencia IV', 'AU 408 Docencia IV', 'AU Virtual'
 ];
 
 const espacioSeleccionado = ref(laboratoriosList[0]);
@@ -324,7 +324,8 @@ const exportarExcel = () => {
         "HORA", 
         "EDIFICIO PESADO 1 y 2", "", "", "", "", "", "", // 7 columnas para Pesado
         "DOCENCIA III (PB)", "", "", "", "", "",         // 6 columnas para Docencia III
-        "DOCENCIA IV", "", ""                            // 3 columnas para Docencia IV
+        "DOCENCIA IV", "", "",                            // 3 columnas para Docencia IV
+        "VIRTUAL", "", "",  
     ];
     
     // Todos los espacios (sin usar slice)
