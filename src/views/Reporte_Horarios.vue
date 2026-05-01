@@ -353,13 +353,26 @@ const exportarExcel = () => {
 };
 
 // MATRIZ HORARIO UNIVERSAL
+// MATRIZ HORARIO UNIVERSAL
 const matrizHorario = computed(() => {
   const matrix = [];
+  // Este objeto controlará las celdas que debemos "saltarnos" porque una clase de arriba ya las cubrió con un rowspan
+  const skipCells = { 'Lunes': 0, 'Martes': 0, 'Miércoles': 0, 'Jueves': 0, 'Viernes': 0 };
+
   for (let r = 0; r < bloquesHorarios.length; r++) {
     const bloque = bloquesHorarios[r];
     const row = { bloque, celdas: {} };
+
     if (bloque.tipo !== 'receso') {
       for (const dia of diasList) {
+        
+        // 1. Si esta celda ya está cubierta por un rowspan de una hora anterior, la saltamos obligatoriamente
+        if (skipCells[dia] > 0) {
+          row.celdas[dia] = { render: false };
+          skipCells[dia]--; // Descontamos 1 hora al bloque que estamos saltando
+          continue;
+        }
+
         let claseInicio;
         if (vistaActiva.value === 'individual') {
           claseInicio = horarios.value.find(c => c.dia === dia && c.laboratorio === espacioSeleccionado.value && c.horaInicio === bloque.inicio);
@@ -371,21 +384,22 @@ const matrizHorario = computed(() => {
 
         if (claseInicio) {
           let rowspan = 1;
+          // Calcular cuántos bloques hacia abajo abarca esta clase
           for (let nextR = r + 1; nextR < bloquesHorarios.length; nextR++) {
-            if (bloquesHorarios[nextR].tipo !== 'receso' && bloquesHorarios[nextR].inicio < claseInicio.horaFin) rowspan++;
-            else break;
+            if (bloquesHorarios[nextR].tipo !== 'receso' && bloquesHorarios[nextR].inicio < claseInicio.horaFin) {
+              rowspan++;
+            } else {
+              break;
+            }
           }
           row.celdas[dia] = { render: true, rowspan, clase: claseInicio };
+          
+          // 2. Le decimos a las SIGUIENTES filas que NO se dibujen en esta columna durante 'X' bloques
+          skipCells[dia] = rowspan - 1; 
+          
         } else {
-          let claseAnterior;
-          if (vistaActiva.value === 'individual') {
-            claseAnterior = horarios.value.find(c => c.dia === dia && c.laboratorio === espacioSeleccionado.value && c.horaInicio < bloque.inicio && c.horaFin > bloque.inicio);
-          } else if (vistaActiva.value === 'grupo') {
-            claseAnterior = horarios.value.find(c => c.dia === dia && c.grupo === grupoSeleccionado.value && c.horaInicio < bloque.inicio && c.horaFin > bloque.inicio);
-          } else {
-            claseAnterior = horarios.value.find(c => c.dia === dia && c.docente === maestroSeleccionado.value && c.horaInicio < bloque.inicio && c.horaFin > bloque.inicio);
-          }
-          row.celdas[dia] = claseAnterior ? { render: false } : { render: true, rowspan: 1, clase: null };
+          // No hay clase, dibujamos celda vacía normal
+          row.celdas[dia] = { render: true, rowspan: 1, clase: null };
         }
       }
     }
