@@ -522,37 +522,38 @@ header { flex-shrink: 0; }
 /* =========================================
    MAGIA PARA UNA TABLA INMUTABLE
 ========================================= */
+/* =========================================
+   MAGIA PARA UNA TABLA INMUTABLE Y BORDES NÍTIDOS
+========================================= */
 .table-container { 
-  /* La tabla ocupa exactamente el espacio disponible entre header y footer, ni más ni menos */
   flex: 1 1 auto; 
   display: flex; 
   flex-direction: column; 
   margin: 4px 0;
-  /* Crucial: Evita que el contenedor crezca más allá de su espacio asignado */
   min-height: 0; 
 }
 
 .horario-table { 
-  height: 100%; /* Obliga a la tabla a estirarse a lo alto del contenedor */
-  border: 2px solid black !important; 
-  table-layout: fixed; /* Anchos de columna fijos y distribuidos equitativamente */
+  height: 100%; 
+  width: 100%;
+  /* Fuerza a que las líneas se fusionen sin errores de renderizado */
+  border-collapse: collapse !important; 
+  table-layout: fixed; 
   margin: 0 !important;
+  /* Borde exterior ligeramente más grueso, en PUNTOS (pt) */
+  border: 1.5pt solid #000 !important; 
 }
 
-/* 
-   EL SECRETO: Celdas con alto estricto 
-   Al usar height: 1%, forzamos al navegador a distribuir la altura de manera equitativa
-   entre todas las filas, sin importar el contenido.
-*/
 .horario-table tr {
   height: 1%; 
 }
 
 .horario-table th, 
 .horario-table td { 
+  /* Bordes internos finos y uniformes en PUNTOS (pt) para el PDF */
+  border: 0.75pt solid #000 !important; 
   padding: 2px !important; 
   vertical-align: middle;
-  /* Impide que la celda crezca por contenido largo */
   overflow: hidden; 
 }
 
@@ -658,12 +659,15 @@ footer {
   body * { visibility: hidden !important; }
   .hoja-horizontal, .hoja-horizontal * { visibility: visible !important; }
   
+/* 5. Posición perfecta con tolerancia de 1mm */
   .hoja-horizontal { 
     position: absolute !important; 
     left: 0 !important; 
     top: 0 !important; 
-    width: 27.94cm !important; 
-    height: 21.59cm !important; 
+    /* 27.94cm y 21.59cm exactos a veces causan fallos de borde. 
+       27.8cm y 21.4cm le dan el espacio perfecto al PDF */
+    width: 27.8cm !important; 
+    height: 21.4cm !important; 
     margin: 0 !important; 
     padding: 5mm 8mm !important; 
     box-sizing: border-box !important;
@@ -673,9 +677,11 @@ footer {
     page-break-inside: avoid !important;
   }
   
+  /* 6. Forzar impresión a color y Suavizado de Fuentes */
   * { 
     -webkit-print-color-adjust: exact !important; 
     print-color-adjust: exact !important; 
+    /* Obliga al PDF a renderizar textos y bordes en su máxima calidad */
+    text-rendering: optimizeLegibility !important; 
   }
-}
 </style>
