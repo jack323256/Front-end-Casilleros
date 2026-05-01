@@ -449,20 +449,19 @@ onMounted(async () => {
 /* =========================================
    ESTILOS GENERALES Y VISTA EN PANTALLA
 ========================================= */
-.reporte-bg { 
-  background-color: #555; 
-}
+.reporte-bg { background-color: #555; }
 
+/* Contenedor principal: Tamaño carta horizontal estricto */
 .hoja-horizontal { 
   background: white; 
   width: 27.94cm; 
   height: 21.59cm; 
   margin: 0 auto; 
   box-sizing: border-box; 
-  /* Reducimos un poco el margen interno para ganar espacio vital vertical */
-  padding: 4mm 8mm; 
+  padding: 5mm 8mm; /* Márgenes compactos */
   display: flex; 
   flex-direction: column; 
+  /* Evita desbordamientos a nivel de hoja */
   overflow: hidden; 
 }
 
@@ -473,106 +472,129 @@ onMounted(async () => {
   margin-left: -8mm; 
 }
 
-.texto-dorado { 
-  color: #b58c2a; 
-  letter-spacing: -1px; 
-}
+.texto-dorado { color: #b58c2a; letter-spacing: -1px; }
 
-.logo-top { 
-  height: 50px; /* Ligeramente más pequeño para optimizar espacio */
-  object-fit: contain; 
-}
+/* El encabezado no debe aplastarse */
+header { flex-shrink: 0; }
+.logo-top { height: 45px; object-fit: contain; }
 
 /* =========================================
-   MAGIA FLEXBOX PARA LA TABLA
+   MAGIA PARA UNA TABLA INMUTABLE
 ========================================= */
 .table-container { 
-  flex-grow: 1; 
-  flex-shrink: 1; /* Permite que el contenedor se comprima si es necesario */
-  min-height: 0;  /* EL SECRETO: Evita que el contenedor desborde su altura original */
+  /* La tabla ocupa exactamente el espacio disponible entre header y footer, ni más ni menos */
+  flex: 1 1 auto; 
   display: flex; 
   flex-direction: column; 
-  margin-top: 4px; 
-  margin-bottom: 4px;
+  margin: 4px 0;
+  /* Crucial: Evita que el contenedor crezca más allá de su espacio asignado */
+  min-height: 0; 
 }
 
 .horario-table { 
-  height: 100%; 
+  height: 100%; /* Obliga a la tabla a estirarse a lo alto del contenedor */
   border: 2px solid black !important; 
-  table-layout: fixed; 
+  table-layout: fixed; /* Anchos de columna fijos y distribuidos equitativamente */
   margin: 0 !important;
 }
 
-/* Reducimos al máximo los espacios vacíos dentro de cada celda */
+/* 
+   EL SECRETO: Celdas con alto estricto 
+   Al usar height: 1%, forzamos al navegador a distribuir la altura de manera equitativa
+   entre todas las filas, sin importar el contenido.
+*/
+.horario-table tr {
+  height: 1%; 
+}
+
 .horario-table th, 
 .horario-table td { 
-  padding: 2px 4px !important; 
+  padding: 2px !important; 
   vertical-align: middle;
-  overflow: hidden;
+  /* Impide que la celda crezca por contenido largo */
+  overflow: hidden; 
 }
 
 .header-verde { 
   background-color: #005b4f !important; 
   color: white !important; 
   font-size: 0.75rem; 
+  height: 20px; /* Alto fijo para el encabezado de la tabla */
 }
 
 .bg-hora { 
   background-color: #cfd8dc !important; 
-  font-size: 0.6rem; /* Letra un poco más pequeña en la hora */
-  width: 80px;
+  font-size: 0.55rem; /* Hora más pequeña para ahorrar espacio */
+  width: 75px;
 }
 
-.bg-receso { 
-  background-color: #e0e0e0 !important; 
-  font-size: 0.8rem; 
+.bg-receso { background-color: #e0e0e0 !important; font-size: 0.75rem; }
+
+/* =========================================
+   CONTENIDO DE LA CELDA (EL TEXTO)
+========================================= */
+.celda-clase {
+  position: relative; /* Para posibles ajustes de posicionamiento interno */
 }
 
-.celda-clase { 
-  vertical-align: middle; 
-}
-
-.has-class { 
-  cursor: pointer; 
-}
-
-/* Ajustes para comprimir los textos internos de la clase */
+/* Contenedor interno para el texto de la clase */
 .clase-info { 
   text-align: center; 
-  line-height: 1; 
+  line-height: 0.95; /* Interlineado muy compacto */
+  /* Flexbox para centrar sin expandir la celda padre */
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%; /* Ocupa el espacio que la celda le da, sin forzarla a crecer */
 }
 
+/* 
+   Ajuste de tipografías:
+   Usamos clamp() si es posible, o tamaños muy pequeños para asegurar que quepan.
+*/
 .texto-grupo-color { 
-  font-size: 0.8rem; 
+  font-size: 0.7rem; 
   font-weight: 900; 
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .fs-docente { 
-  font-size: 0.65rem; 
+  font-size: 0.55rem; 
   color: #222; 
-  margin-top: 2px;
+  margin-top: 1px;
+  /* Permite que el nombre largo se rompa en varias líneas más fácil */
+  word-wrap: break-word; 
 }
 
 .fs-materia { 
-  font-size: 0.65rem; 
+  font-size: 0.55rem; 
   color: #005b4f; 
-  margin-top: 2px;
+  margin-top: 1px;
+  word-wrap: break-word;
+  /* Si la materia es excesivamente larga, se truncará con puntos suspensivos (...)
+     en lugar de estirar la celda */
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Máximo 3 líneas para la materia */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* =========================================
    BLINDAJE DEL PIE DE PÁGINA (FOOTER)
 ========================================= */
 footer {
-  flex-shrink: 0; /* IMPIDE que el pie de página se aplaste o desaparezca */
-  margin-top: auto; /* Lo empuja siempre al fondo */
+  /* IMPIDE que el pie de página se aplaste o desaparezca */
+  flex-shrink: 0; 
+  margin-top: auto; 
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 
 .logo-bottom { 
-  height: 40px; 
+  height: 35px; /* Un poco más compacto */
   object-fit: contain; 
 }
 
@@ -580,17 +602,10 @@ footer {
    REGLAS DE IMPRESIÓN (PDF)
 ========================================= */
 @media print {
-  @page { 
-    size: letter landscape; 
-    margin: 0 !important; 
-  }
+  @page { size: letter landscape; margin: 0 !important; }
   
-  /* 1. DESTRUIR BARRA GLOBAL Y BOTONES */
-  nav, .navbar, header:not(.d-flex), .no-print {
-    display: none !important;
-  }
+  nav, .navbar, header:not(.d-flex), .no-print { display: none !important; }
 
-  /* 2. EL SECRETO PARA UNA SOLA HOJA */
   html, body, #app, .reporte-bg {
     height: 100% !important;
     min-height: 0 !important;
@@ -599,17 +614,9 @@ footer {
     overflow: hidden !important; 
   }
 
-  /* 3. Volver INVISIBLE el resto de la aplicación */
-  body * { 
-    visibility: hidden !important; 
-  }
+  body * { visibility: hidden !important; }
+  .hoja-horizontal, .hoja-horizontal * { visibility: visible !important; }
   
-  /* 4. Volver VISIBLE únicamente nuestra hoja */
-  .hoja-horizontal, .hoja-horizontal * { 
-    visibility: visible !important; 
-  }
-  
-  /* 5. Posición perfecta */
   .hoja-horizontal { 
     position: absolute !important; 
     left: 0 !important; 
@@ -617,17 +624,14 @@ footer {
     width: 27.94cm !important; 
     height: 21.59cm !important; 
     margin: 0 !important; 
-    /* Mismos márgenes que en pantalla para que la impresión sea idéntica */
-    padding: 4mm 8mm !important; 
+    padding: 5mm 8mm !important; 
     box-sizing: border-box !important;
     background-color: white !important; 
     z-index: 9999 !important; 
-    
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
   }
   
-  /* 6. Forzar impresión a color */
   * { 
     -webkit-print-color-adjust: exact !important; 
     print-color-adjust: exact !important; 
