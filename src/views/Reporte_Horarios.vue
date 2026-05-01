@@ -353,23 +353,21 @@ const exportarExcel = () => {
 };
 
 // MATRIZ HORARIO UNIVERSAL
-// MATRIZ HORARIO UNIVERSAL
+// MATRIZ HORARIO UNIVERSAL OPTIMIZADA
 const matrizHorario = computed(() => {
   const matrix = [];
-  // Este objeto controlará las celdas que debemos "saltarnos" porque una clase de arriba ya las cubrió con un rowspan
   const skipCells = { 'Lunes': 0, 'Martes': 0, 'Miércoles': 0, 'Jueves': 0, 'Viernes': 0 };
 
+  // 1. Construimos la matriz completa como lo hacíamos antes
   for (let r = 0; r < bloquesHorarios.length; r++) {
     const bloque = bloquesHorarios[r];
     const row = { bloque, celdas: {} };
 
     if (bloque.tipo !== 'receso') {
       for (const dia of diasList) {
-        
-        // 1. Si esta celda ya está cubierta por un rowspan de una hora anterior, la saltamos obligatoriamente
         if (skipCells[dia] > 0) {
           row.celdas[dia] = { render: false };
-          skipCells[dia]--; // Descontamos 1 hora al bloque que estamos saltando
+          skipCells[dia]--;
           continue;
         }
 
@@ -384,7 +382,6 @@ const matrizHorario = computed(() => {
 
         if (claseInicio) {
           let rowspan = 1;
-          // Calcular cuántos bloques hacia abajo abarca esta clase
           for (let nextR = r + 1; nextR < bloquesHorarios.length; nextR++) {
             if (bloquesHorarios[nextR].tipo !== 'receso' && bloquesHorarios[nextR].inicio < claseInicio.horaFin) {
               rowspan++;
@@ -393,19 +390,63 @@ const matrizHorario = computed(() => {
             }
           }
           row.celdas[dia] = { render: true, rowspan, clase: claseInicio };
-          
-          // 2. Le decimos a las SIGUIENTES filas que NO se dibujen en esta columna durante 'X' bloques
           skipCells[dia] = rowspan - 1; 
-          
         } else {
-          // No hay clase, dibujamos celda vacía normal
           row.celdas[dia] = { render: true, rowspan: 1, clase: null };
         }
       }
     }
     matrix.push(row);
   }
-  return matrix;
+
+  // =========================================================
+  // 2. FILTRO INTELIGENTE PARA APROVECHAR EL ESPACIO
+  // =========================================================
+  
+  let ultimoIndiceConClase = -1;
+
+  // Escaneamos la matriz para encontrar la ÚLTIMA fila que tiene contenido
+  for (let i = 0; i < matrix.length; i++) {
+    const row = matrix[i];
+    let filaOcupada = false;
+
+    if (row.bloque.tipo !== 'receso') {
+      for (const dia of diasList) {
+        // ¿Hay una clase aquí? (render: true y clase existe) 
+        // ¿O hay una clase pasando por aquí desde arriba? (render: false)
+        if ((row.celdas[dia].render && row.celdas[dia].clase) || !row.celdas[dia].render) {
+          filaOcupada = true;
+          break;
+        }
+      }
+    } else {
+      // Marcamos temporalmente el receso como ocupado para evaluarlo
+      filaOcupada = true;
+    }
+
+    if (filaOcupada) {
+      ultimoIndiceConClase = i;
+    }
+  }
+
+  // Si el último bloque con "contenido" es el RECESO, lo eliminamos también 
+  // (no tiene caso mostrar un receso si ya no hay clases después)
+  while (ultimoIndiceConClase >= 0 && matrix[ultimoIndiceConClase].bloque.tipo === 'receso') {
+    ultimoIndiceConClase--;
+  }
+
+  // 3. Recortar la matriz
+  if (ultimoIndiceConClase !== -1) {
+    // Para que la tabla no se vea extraña si alguien solo tiene clase a las 7:00 AM,
+    // le decimos que POR LO MENOS dibuje hasta el receso (índice 5).
+    const indiceSanoMinimo = Math.max(ultimoIndiceConClase, 5);
+    
+    // Retornamos la matriz cortada exactamente donde terminan las clases
+    return matrix.slice(0, indiceSanoMinimo + 1);
+  }
+
+  // Si no hay ninguna clase programada en toda la semana, devolvemos al menos hasta el receso
+  return matrix.slice(0, 6);
 });
 
 const cuatrimestreAutomatico = computed(() => {
