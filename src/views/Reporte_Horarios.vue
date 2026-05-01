@@ -496,28 +496,66 @@ onMounted(async () => {
   }
   
   /* 5. Posición perfecta */
-  .hoja-horizontal { 
-    position: absolute !important; 
-    left: 0 !important; 
-    top: 0 !important; 
-    width: 27.94cm !important; 
-    height: 21.59cm !important; 
-    margin: 0 !important; 
-    padding: 6mm 10mm !important; 
-    box-sizing: border-box !important;
-    background-color: white !important; 
-    z-index: 9999 !important; 
-    
-    /* Bloquear saltos de página */
-    page-break-after: avoid !important;
-    page-break-inside: avoid !important;
-  }
-  
-  /* 6. Forzar impresión a color */
-  * { 
-    -webkit-print-color-adjust: exact !important; 
-    print-color-adjust: exact !important; 
-  }
+ /* 1. Ajuste del contenedor principal para dar más respiro */
+.hoja-horizontal { 
+  background: white; 
+  width: 27.94cm; 
+  height: 21.59cm; 
+  margin: 0 auto; 
+  box-sizing: border-box; 
+  padding: 4mm 8mm; /* Redujimos un poco el borde blanco para dar más espacio interno */
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden; 
+}
+
+/* 2. EL SECRETO FLEXBOX: min-height: 0 obliga a la tabla a comprimirse y no empujar el footer */
+.table-container { 
+  flex-grow: 1; 
+  display: flex; 
+  flex-direction: column; 
+  margin-top: 5px; 
+  margin-bottom: 5px;
+  min-height: 0; /* ¡MUY IMPORTANTE! */
+}
+
+.horario-table { 
+  height: 100%; 
+  border: 2px solid black !important; 
+  table-layout: fixed; 
+  margin: 0 !important;
+}
+
+/* 3. Reducir los espacios internos (paddings) de las celdas al mínimo */
+.horario-table th, .horario-table td {
+  padding: 1px 2px !important; 
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+/* 4. Ajustes de tipografía que se comprimen mejor */
+.clase-info { 
+  text-align: center; 
+  line-height: 1; /* Quitamos interlineado extra */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Textos un poco más compactos */
+.texto-grupo-color { font-size: 0.75rem; font-weight: 900; margin: 0; }
+.fs-docente { font-size: 0.6rem; color: #222; margin: 2px 0 0 0 !important; }
+.fs-materia { font-size: 0.65rem; color: #005b4f; margin: 2px 0 0 0 !important; }
+.bg-hora { background-color: #cfd8dc !important; font-size: 0.6rem; width: 80px;}
+
+/* 5. Blindaje del Footer para que NUNCA se encoja ni desaparezca */
+footer {
+  flex-shrink: 0; /* Le dice al navegador: "Por favor, encoge la tabla, pero NO toques el pie de página" */
+}
+.logo-bottom { 
+  height: 38px; /* Un poco más pequeño para asegurar que quepa holgadamente */
+  object-fit: contain; 
 }
 
 
