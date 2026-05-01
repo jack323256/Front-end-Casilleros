@@ -490,9 +490,11 @@ onMounted(async () => {
 /* =========================================
    ESTILOS GENERALES Y VISTA EN PANTALLA
 ========================================= */
-.reporte-bg { background-color: #555; }
+.reporte-bg { 
+  background-color: #555; 
+}
 
-/* Contenedor principal: Tamaño carta horizontal estricto */
+/* Contenedor principal: Tamaño carta horizontal */
 .hoja-horizontal { 
   background: white; 
   width: 27.94cm; 
@@ -502,7 +504,6 @@ onMounted(async () => {
   padding: 5mm 8mm; /* Márgenes compactos */
   display: flex; 
   flex-direction: column; 
-  /* Evita desbordamientos a nivel de hoja */
   overflow: hidden; 
 }
 
@@ -520,38 +521,32 @@ header { flex-shrink: 0; }
 .logo-top { height: 45px; object-fit: contain; }
 
 /* =========================================
-   MAGIA PARA UNA TABLA INMUTABLE
-========================================= */
-/* =========================================
-   MAGIA PARA UNA TABLA INMUTABLE Y BORDES NÍTIDOS
+   MAGIA PARA UNA TABLA INMUTABLE Y BORDES (PDF)
 ========================================= */
 .table-container { 
   flex: 1 1 auto; 
   display: flex; 
   flex-direction: column; 
   margin: 4px 0;
-  min-height: 0; 
+  min-height: 0; /* Vital para que no desborde */
 }
 
 .horario-table { 
   height: 100%; 
   width: 100%;
-  /* Fuerza a que las líneas se fusionen sin errores de renderizado */
-  border-collapse: collapse !important; 
+  border-collapse: collapse !important; /* CRUCIAL para líneas nítidas en PDF */
   table-layout: fixed; 
   margin: 0 !important;
-  /* Borde exterior ligeramente más grueso, en PUNTOS (pt) */
-  border: 1.5pt solid #000 !important; 
+  border: 1.5pt solid #000 !important; /* Borde exterior en PUNTOS */
 }
 
 .horario-table tr {
-  height: 1%; 
+  height: 1%; /* Fuerza altura equitativa de las filas */
 }
 
 .horario-table th, 
 .horario-table td { 
-  /* Bordes internos finos y uniformes en PUNTOS (pt) para el PDF */
-  border: 0.75pt solid #000 !important; 
+  border: 0.75pt solid #000 !important; /* Bordes internos finos en PUNTOS */
   padding: 2px !important; 
   vertical-align: middle;
   overflow: hidden; 
@@ -561,41 +556,33 @@ header { flex-shrink: 0; }
   background-color: #005b4f !important; 
   color: white !important; 
   font-size: 0.75rem; 
-  height: 20px; /* Alto fijo para el encabezado de la tabla */
+  height: 20px; 
 }
 
 .bg-hora { 
   background-color: #cfd8dc !important; 
-  font-size: 0.55rem; /* Hora más pequeña para ahorrar espacio */
+  font-size: 0.55rem; 
   width: 75px;
 }
 
 .bg-receso { background-color: #e0e0e0 !important; font-size: 0.75rem; }
 
 /* =========================================
-   CONTENIDO DE LA CELDA (EL TEXTO)
+   CONTENIDO DE LA CELDA (TEXTO AJUSTABLE)
 ========================================= */
-.celda-clase {
-  position: relative; /* Para posibles ajustes de posicionamiento interno */
-}
+.celda-clase { position: relative; }
 
-/* Contenedor interno para el texto de la clase */
 .clase-info { 
   text-align: center; 
-  line-height: 0.95; /* Interlineado muy compacto */
-  /* Flexbox para centrar sin expandir la celda padre */
+  line-height: 0.95; 
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100%; /* Ocupa el espacio que la celda le da, sin forzarla a crecer */
+  height: 100%; 
 }
 
-/* 
-   Ajuste de tipografías:
-   Usamos clamp() si es posible, o tamaños muy pequeños para asegurar que quepan.
-*/
 .texto-grupo-color { 
   font-size: 0.7rem; 
   font-weight: 900; 
@@ -606,7 +593,6 @@ header { flex-shrink: 0; }
   font-size: 0.55rem; 
   color: #222; 
   margin-top: 1px;
-  /* Permite que el nombre largo se rompa en varias líneas más fácil */
   word-wrap: break-word; 
 }
 
@@ -615,10 +601,8 @@ header { flex-shrink: 0; }
   color: #005b4f; 
   margin-top: 1px;
   word-wrap: break-word;
-  /* Si la materia es excesivamente larga, se truncará con puntos suspensivos (...)
-     en lugar de estirar la celda */
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* Máximo 3 líneas para la materia */
+  -webkit-line-clamp: 3; /* Trunca el texto a 3 líneas si es muy largo */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -627,8 +611,7 @@ header { flex-shrink: 0; }
    BLINDAJE DEL PIE DE PÁGINA (FOOTER)
 ========================================= */
 footer {
-  /* IMPIDE que el pie de página se aplaste o desaparezca */
-  flex-shrink: 0; 
+  flex-shrink: 0; /* Impide que el footer se aplaste */
   margin-top: auto; 
   display: flex;
   justify-content: space-between;
@@ -636,12 +619,12 @@ footer {
 }
 
 .logo-bottom { 
-  height: 35px; /* Un poco más compacto */
+  height: 35px; 
   object-fit: contain; 
 }
 
 /* =========================================
-   REGLAS DE IMPRESIÓN (PDF)
+   REGLAS DE IMPRESIÓN (PDF Y TAMAÑO CARTA)
 ========================================= */
 @media print {
   @page { size: letter landscape; margin: 0 !important; }
@@ -659,13 +642,11 @@ footer {
   body * { visibility: hidden !important; }
   .hoja-horizontal, .hoja-horizontal * { visibility: visible !important; }
   
-/* 5. Posición perfecta con tolerancia de 1mm */
   .hoja-horizontal { 
     position: absolute !important; 
     left: 0 !important; 
     top: 0 !important; 
-    /* 27.94cm y 21.59cm exactos a veces causan fallos de borde. 
-       27.8cm y 21.4cm le dan el espacio perfecto al PDF */
+    /* Tolerancia de 1-2 mm para evitar choques con el límite del papel del navegador */
     width: 27.8cm !important; 
     height: 21.4cm !important; 
     margin: 0 !important; 
@@ -677,11 +658,11 @@ footer {
     page-break-inside: avoid !important;
   }
   
-  /* 6. Forzar impresión a color y Suavizado de Fuentes */
   * { 
     -webkit-print-color-adjust: exact !important; 
     print-color-adjust: exact !important; 
-    /* Obliga al PDF a renderizar textos y bordes en su máxima calidad */
+    /* Obliga al motor de renderizado a suavizar vectores, textos y líneas (Adiós bordes feos) */
     text-rendering: optimizeLegibility !important; 
   }
+}
 </style>
