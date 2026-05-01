@@ -423,7 +423,7 @@ const editMode = ref(false)
 const editId = ref(null)
 
 const form = ref({
-  dia: 'Lunes',
+  dia: diaSeleccionado.value, // <-- Cambio: usar el día seleccionado en lugar de 'Lunes'
   laboratorio: laboratorios.value[0].nombre,
   materia: '',
   grupo: '',
@@ -663,7 +663,7 @@ function cancelEdit() {
   editMode.value = false
   editId.value = null
   form.value = {
-    dia: 'Lunes',
+    dia: diaSeleccionado.value, // <-- Cambio principal: mantener el día de la vista actual
     laboratorio: laboratorios.value[0].nombre,
     materia: '',
     grupo: '',
@@ -675,9 +675,9 @@ function cancelEdit() {
 
 
 function abrirFormularioNuevo(nombreLaboratorio = null) {
-  cancelEdit(); // Resetea el formulario por si había algo escrito
-  
-  // Si le dimos clic al botón de un laboratorio específico, lo pre-selecciona
+  cancelEdit(); // Resetea el formulario y ahora mantiene el 'diaSeleccionado'
+
+  // Pre-selecciona el laboratorio si se hizo clic en un botón específico
   if (nombreLaboratorio) {
     form.value.laboratorio = nombreLaboratorio;
   }
