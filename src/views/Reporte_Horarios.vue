@@ -446,155 +446,191 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
-/* (Tus estilos originales se mantienen) */
-
-.reporte-bg { background-color: #555; }
-
-.hoja-horizontal { background: white; width: 27.94cm; height: 21.59cm; margin: 0 auto; box-sizing: border-box; padding: 6mm 10mm; display: flex; flex-direction: column; overflow: hidden; }
-
-.barra-verde { background-color: #005b4f; padding: 4px 20px 4px 15px; border-radius: 0 20px 20px 0; margin-left: -10mm; }
-
-.texto-dorado { color: #b58c2a; letter-spacing: -1px; }
-
-.logo-top { height: 55px; object-fit: contain; }
-
-.table-container { flex-grow: 1; display: flex; flex-direction: column; margin-top: 2px; }
-
-.horario-table { height: 100%; border: 2px solid black !important; table-layout: fixed; }
-
-.header-verde { background-color: #005b4f !important; color: white !important; font-size: 0.75rem; }
-
-.bg-hora { background-color: #cfd8dc !important; font-size: 0.65rem; width: 85px;}
-
-.bg-receso { background-color: #e0e0e0 !important; font-size: 0.85rem; }
-
-.celda-clase { vertical-align: middle; }
-
-.has-class { cursor: pointer; }
-
-.clase-info { text-align: center; line-height: 1.1; }
-
-.texto-grupo-color { font-size: 0.85rem; font-weight: 900; }
-
-.fs-docente { font-size: 0.7rem; color: #222; }
-
-.fs-materia { font-size: 0.75rem; color: #005b4f; }
-
-.logo-bottom { height: 45px; object-fit: contain; }
-
-
-
-@media print {
-
-  @page { 
-
-    size: letter landscape; 
-
-    margin: 0 !important; 
-
-  }
-
-  
-
-  /* 1. DESTRUIR BARRA GLOBAL Y BOTONES */
-
-  nav, .navbar, header:not(.d-flex), .no-print {
-
-    display: none !important;
-
-  }
-
-
-
-  /* 2. EL SECRETO PARA UNA SOLA HOJA: Cortar de raíz cualquier desbordamiento fantasma */
-
-  html, body, #app, .reporte-bg {
-
-    height: 100% !important;
-
-    min-height: 0 !important; /* Quita el min-vh-100 de tu clase */
-
-    padding: 0 !important; /* Quita el pb-4 de tu clase */
-
-    margin: 0 !important;
-
-    overflow: hidden !important; /* Literalmente "corta" cualquier hoja extra */
-
-  }
-
-
-
-  /* 3. Volver INVISIBLE el resto de la aplicación */
-
-  body * { 
-
-    visibility: hidden !important; 
-
-  }
-
-  
-
-  /* 4. Volver VISIBLE únicamente nuestra hoja */
-
-  .hoja-horizontal, .hoja-horizontal * { 
-
-    visibility: visible !important; 
-
-  }
-
-  
-
-  /* 5. Posición perfecta */
-
-  .hoja-horizontal { 
-
-    position: absolute !important; 
-
-    left: 0 !important; 
-
-    top: 0 !important; 
-
-    width: 27.94cm !important; 
-
-    height: 21.59cm !important; 
-
-    margin: 0 !important; 
-
-    padding: 6mm 10mm !important; 
-
-    box-sizing: border-box !important;
-
-    background-color: white !important; 
-
-    z-index: 9999 !important; 
-
-    
-
-    /* Bloquear saltos de página */
-
-    page-break-after: avoid !important;
-
-    page-break-inside: avoid !important;
-
-  }
-
-  
-
-  /* 6. Forzar impresión a color */
-
-  * { 
-
-    -webkit-print-color-adjust: exact !important; 
-
-    print-color-adjust: exact !important; 
-
-  }
-
+/* =========================================
+   ESTILOS GENERALES Y VISTA EN PANTALLA
+========================================= */
+.reporte-bg { 
+  background-color: #555; 
 }
 
+.hoja-horizontal { 
+  background: white; 
+  width: 27.94cm; 
+  height: 21.59cm; 
+  margin: 0 auto; 
+  box-sizing: border-box; 
+  /* Reducimos un poco el margen interno para ganar espacio vital vertical */
+  padding: 4mm 8mm; 
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden; 
+}
 
+.barra-verde { 
+  background-color: #005b4f; 
+  padding: 4px 20px 4px 15px; 
+  border-radius: 0 20px 20px 0; 
+  margin-left: -8mm; 
+}
 
+.texto-dorado { 
+  color: #b58c2a; 
+  letter-spacing: -1px; 
+}
 
+.logo-top { 
+  height: 50px; /* Ligeramente más pequeño para optimizar espacio */
+  object-fit: contain; 
+}
 
+/* =========================================
+   MAGIA FLEXBOX PARA LA TABLA
+========================================= */
+.table-container { 
+  flex-grow: 1; 
+  flex-shrink: 1; /* Permite que el contenedor se comprima si es necesario */
+  min-height: 0;  /* EL SECRETO: Evita que el contenedor desborde su altura original */
+  display: flex; 
+  flex-direction: column; 
+  margin-top: 4px; 
+  margin-bottom: 4px;
+}
+
+.horario-table { 
+  height: 100%; 
+  border: 2px solid black !important; 
+  table-layout: fixed; 
+  margin: 0 !important;
+}
+
+/* Reducimos al máximo los espacios vacíos dentro de cada celda */
+.horario-table th, 
+.horario-table td { 
+  padding: 2px 4px !important; 
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.header-verde { 
+  background-color: #005b4f !important; 
+  color: white !important; 
+  font-size: 0.75rem; 
+}
+
+.bg-hora { 
+  background-color: #cfd8dc !important; 
+  font-size: 0.6rem; /* Letra un poco más pequeña en la hora */
+  width: 80px;
+}
+
+.bg-receso { 
+  background-color: #e0e0e0 !important; 
+  font-size: 0.8rem; 
+}
+
+.celda-clase { 
+  vertical-align: middle; 
+}
+
+.has-class { 
+  cursor: pointer; 
+}
+
+/* Ajustes para comprimir los textos internos de la clase */
+.clase-info { 
+  text-align: center; 
+  line-height: 1; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.texto-grupo-color { 
+  font-size: 0.8rem; 
+  font-weight: 900; 
+  margin-bottom: 2px;
+}
+
+.fs-docente { 
+  font-size: 0.65rem; 
+  color: #222; 
+  margin-top: 2px;
+}
+
+.fs-materia { 
+  font-size: 0.65rem; 
+  color: #005b4f; 
+  margin-top: 2px;
+}
+
+/* =========================================
+   BLINDAJE DEL PIE DE PÁGINA (FOOTER)
+========================================= */
+footer {
+  flex-shrink: 0; /* IMPIDE que el pie de página se aplaste o desaparezca */
+  margin-top: auto; /* Lo empuja siempre al fondo */
+}
+
+.logo-bottom { 
+  height: 40px; 
+  object-fit: contain; 
+}
+
+/* =========================================
+   REGLAS DE IMPRESIÓN (PDF)
+========================================= */
+@media print {
+  @page { 
+    size: letter landscape; 
+    margin: 0 !important; 
+  }
+  
+  /* 1. DESTRUIR BARRA GLOBAL Y BOTONES */
+  nav, .navbar, header:not(.d-flex), .no-print {
+    display: none !important;
+  }
+
+  /* 2. EL SECRETO PARA UNA SOLA HOJA */
+  html, body, #app, .reporte-bg {
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important; 
+  }
+
+  /* 3. Volver INVISIBLE el resto de la aplicación */
+  body * { 
+    visibility: hidden !important; 
+  }
+  
+  /* 4. Volver VISIBLE únicamente nuestra hoja */
+  .hoja-horizontal, .hoja-horizontal * { 
+    visibility: visible !important; 
+  }
+  
+  /* 5. Posición perfecta */
+  .hoja-horizontal { 
+    position: absolute !important; 
+    left: 0 !important; 
+    top: 0 !important; 
+    width: 27.94cm !important; 
+    height: 21.59cm !important; 
+    margin: 0 !important; 
+    /* Mismos márgenes que en pantalla para que la impresión sea idéntica */
+    padding: 4mm 8mm !important; 
+    box-sizing: border-box !important;
+    background-color: white !important; 
+    z-index: 9999 !important; 
+    
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* 6. Forzar impresión a color */
+  * { 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important; 
+  }
+}
 </style>
