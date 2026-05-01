@@ -589,6 +589,7 @@ function sugerirHorario(dia, laboratorio, docente, minutosDuracion) {
 }
 
 // --- NUEVA FUNCIÓN SAVE CLASE CON VALIDACIÓN ---
+// --- NUEVA FUNCIÓN SAVE CLASE CON VALIDACIÓN (CON EXCEPCIONES VIRTUALES) ---
 async function saveClase() {
   const inicioNuevo = timeToMinutes(form.value.horaInicio);
   const finNuevo = timeToMinutes(form.value.horaFin);
@@ -605,6 +606,8 @@ async function saveClase() {
 
   // 1. Validar Choque de Laboratorio / Aula
   const choqueLugar = clasesDelDiaEvaluar.find(c => 
+    // EXCEPCIÓN: AU Virtual no tiene límite de espacio físico, caben infinitos grupos
+    form.value.laboratorio !== 'AU Virtual' && 
     c.laboratorio === form.value.laboratorio && 
     hayChoque(inicioNuevo, finNuevo, timeToMinutes(c.horaInicio), timeToMinutes(c.horaFin))
   );
@@ -615,14 +618,19 @@ async function saveClase() {
   }
 
   // 2. Validar Choque de Docente
-  const choqueDocente = clasesDelDiaEvaluar.find(c => 
-    c.docente === form.value.docente && 
-    hayChoque(inicioNuevo, finNuevo, timeToMinutes(c.horaInicio), timeToMinutes(c.horaFin))
-  );
+  const choqueDocente = clasesDelDiaEvaluar.find(c => {
+    const esMismoDocente = c.docente === form.value.docente;
+    const hayEmpalme = hayChoque(inicioNuevo, finNuevo, timeToMinutes(c.horaInicio), timeToMinutes(c.horaFin));
+    
+    // EXCEPCIÓN: Si el maestro está en AU Virtual y la nueva clase también es AU Virtual, NO es choque (es unión de grupos)
+    const excepcionVirtual = c.laboratorio === 'AU Virtual' && form.value.laboratorio === 'AU Virtual';
+
+    return esMismoDocente && hayEmpalme && !excepcionVirtual;
+  });
 
   if (choqueDocente) {
     const sugerencia = sugerirHorario(form.value.dia, form.value.laboratorio, form.value.docente, duracion);
-    return alert(`🚨 ERROR DE DOCENTE:\nEl maestro ${form.value.docente} ya imparte clases en ${choqueDocente.laboratorio} de ${choqueDocente.horaInicio} a ${choqueDocente.horaFin} en este mismo día.\n¡Un maestro no puede estar en dos lugares a la vez!\n\n💡 Sugerencia disponible: ${sugerencia}`);
+    return alert(`🚨 ERROR DE DOCENTE:\nEl maestro ${form.value.docente} ya imparte clases en ${choqueDocente.laboratorio} de ${choqueDocente.horaInicio} a ${choqueDocente.horaFin} en este mismo día.\n¡Un maestro no puede estar en dos lugares físicos a la vez!\n\n💡 Sugerencia disponible: ${sugerencia}`);
   }
 
   // Si pasa las validaciones, guardamos
