@@ -361,7 +361,7 @@ const laboratorios = ref([
     icon: 'bi bi-pc-display'  // Monitor + CPU, ideal para sala de cómputo
   },
   { 
-    nombre: 'Lab Manufactura - Pesado I', 
+    nombre: 'Lab Manufactura - Pesado II', 
     color: '#395a0fff', 
     logo: '/logos/electronica.png', 
     icon: 'bi bi-tools'  // Herramientas / manufactura
