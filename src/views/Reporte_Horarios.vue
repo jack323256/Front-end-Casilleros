@@ -1,6 +1,6 @@
 <template>
   <div class="reporte-bg min-vh-100 pb-4">
-    
+    <!-- BARRA DE CONTROL SUPERIOR (NO IMPRIMIBLE) -->
     <div class="container-fluid py-2 bg-white shadow-sm mb-3 no-print border-bottom">
       <div class="row align-items-center px-lg-4">
         <div class="col-md-2">
@@ -51,17 +51,13 @@
 
         <div class="col-md-3 text-end d-flex gap-2 justify-content-end">
           <template v-if="vistaActiva !== 'matriz'">
-            <!-- Botón de PDF existente -->
             <button class="btn btn-sm btn-danger shadow-sm fw-bold px-3" @click="imprimirPDF">
               <i class="bi bi-printer-fill me-1"></i> Imprimir PDF
             </button>
-            
-            <!-- NUEVO: Botón de Imagen JPG -->
             <button class="btn btn-sm btn-warning shadow-sm fw-bold px-3 text-dark" @click="descargarImagen">
               <i class="bi bi-image-fill me-1"></i> Descargar JPG
             </button>
           </template>
-        
           <button v-else class="btn btn-sm btn-success shadow-sm fw-bold px-3" @click="exportarExcel">
             <i class="bi bi-file-earmark-excel-fill me-1"></i> Descargar Excel
           </button>
@@ -69,14 +65,11 @@
       </div>
     </div>
 
+    <!-- VISTA DE REPORTE INDIVIDUAL / GRUPO / MAESTRO -->
     <div v-if="vistaActiva !== 'matriz'" class="hoja-horizontal shadow">
-      
-      <!-- ELEMENTOS DE FONDO (CAPA DETRÁS DE TODO) -->
+      <!-- ELEMENTOS DE FONDO INDUSTRIAL -->
       <div class="industrial-bg-pattern"></div>
       <div class="watermark-gears"></div>
-
-    <!-- NUEVO: Contenedor de Siluetas Técnicas -->
-<!-- Dentro de la hoja-horizontal -->
       <div class="technical-silhouettes">
         <i v-for="(icono, index) in siluetasAleatorias" 
            :key="index"
@@ -90,9 +83,7 @@
            }">
         </i>
       </div>
-      
 
-      <!-- ENCABEZADO ESTILIZADO -->
       <header class="d-flex justify-content-between align-items-center w-100 mb-2 header-industrial">
         <div class="d-flex flex-column align-items-start">
           <div class="barra-verde-industrial shadow-sm">
@@ -112,7 +103,6 @@
         </div>
       </header>
 
-      <!-- TABLA DE HORARIOS (EL CONTENIDO ES EL MISMO) -->
       <div class="table-container">
         <table class="table table-bordered border-dark text-center horario-table align-middle m-0">
           <thead>
@@ -136,19 +126,15 @@
                       :class="{ 'has-class': row.celdas[dia].clase }"
                       @click="abrirDetalle(row.celdas[dia].clase)">
                     <div v-if="row.celdas[dia].clase" class="clase-info">
-                      <div class="texto-grupo-color" :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">
+                      <div v-if="vistaActiva !== 'grupo'" class="texto-grupo-color" :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">
                         {{ row.celdas[dia].clase.grupo }}
                       </div>
-                      <div v-if="vistaActiva !== 'grupo'" 
-                             class="texto-grupo-color" 
-                             :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">
-                          {{ row.celdas[dia].clase.grupo }}
-                        </div>
-                        
-                        <!-- El resto de la información (laboratorio, docente, materia) se mantiene igual -->
-                        <div v-if="vistaActiva !== 'individual'" class="fw-bold text-primary" style="font-size: 0.65rem;">
-                          {{ row.celdas[dia].clase.laboratorio }}
-                        </div>
+                      <div v-if="vistaActiva !== 'individual'" class="fw-bold text-primary" style="font-size: 0.65rem;">
+                        {{ row.celdas[dia].clase.laboratorio }}
+                      </div>
+                      <div v-if="vistaActiva !== 'maestro'" class="text-dark fs-docente lh-1 mt-1">
+                        {{ row.celdas[dia].clase.docente }}
+                      </div>
                       <div class="fw-bold text-dark fs-materia text-uppercase lh-1 mt-1">{{ row.celdas[dia].clase.materia }}</div>
                     </div>
                   </td>
@@ -159,7 +145,6 @@
         </table>
       </div>
 
-      <!-- PIE DE PÁGINA INDUSTRIAL -->
       <footer class="footer-industrial mt-1 pt-1">
         <div class="footer-line"></div>
         <div class="d-flex justify-content-between align-items-end w-100">
@@ -170,7 +155,9 @@
         </div>
       </footer>
     </div>
-<div v-else class="matriz-general-container shadow bg-white p-4 mx-auto border border-2 border-dark">
+
+    <!-- VISTA DE MATRIZ GENERAL -->
+    <div v-else class="matriz-general-container shadow bg-white p-4 mx-auto border border-2 border-dark">
         <div class="text-center mb-4">
             <h2 class="fw-bold text-dark mb-0">MATRIZ DE ESPACIOS - {{ diaMatriz.toUpperCase() }}</h2>
             <p class="fw-bold text-primary mb-0">MANTENIMIENTO INDUSTRIAL Y PETRÓLEO</p>
@@ -206,7 +193,8 @@
         </div>
     </div>
 
-<div v-if="modalVisible" class="modal fade show d-block no-print" tabindex="-1" style="background: rgba(0,0,0,0.6);" @click.self="modalVisible = false">
+    <!-- MODAL DE DETALLES -->
+    <div v-if="modalVisible" class="modal fade show d-block no-print" tabindex="-1" style="background: rgba(0,0,0,0.6);" @click.self="modalVisible = false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg border-0 overflow-hidden">
                 <div class="modal-header bg-primary text-white border-0">
@@ -219,11 +207,10 @@
                     
                     <div class="card bg-light border-0 text-start p-3 mb-0 shadow-sm">
                         <div class="d-flex align-items-center justify-content-center mb-3 pb-3 border-bottom text-center flex-column">
-                           <img :src="fotoDocente(claseSeleccionada.docente)" 
-                               @error="$event.target.src = '/logos/default-docente.png'"
-                               class="rounded-circle shadow bg-white mb-2" 
-                               style="width: 120px; height: 120px; object-fit: cover; border: 4px solid white; display: block; margin: 0 auto;">
-                                class="rounded-circle shadow bg-white mb-2" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid white;">
+                            <img :src="fotoDocente(claseSeleccionada.docente)" 
+                                 @error="$event.target.src = '/logos/default-docente.png'"
+                                 class="rounded-circle shadow bg-white mb-2" 
+                                 style="width: 120px; height: 120px; object-fit: cover; border: 4px solid white; display: block; margin: 0 auto;">
                             <div>
                                 <div class="text-muted small fw-bold text-uppercase mb-1">Docente Asignado</div>
                                 <div class="fw-bold text-dark fs-5 lh-1">{{ claseSeleccionada.docente }}</div>
@@ -242,21 +229,20 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'; // watch importado correctamente
+import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
-import { useRoute } from 'vue-router';
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 
-const route = useRoute();
 const API_URL = 'https://back-end-casilleros.onrender.com/horarios'; 
 const horarios = ref([]);
-
-// CONTROL DE VISTAS
 const vistaActiva = ref('individual');
 const diaMatriz = ref('Lunes');
 const grupoSeleccionado = ref('');
 const maestroSeleccionado = ref('');
+const espacioSeleccionado = ref('Lab de Automatización - Pesado I');
+const modalVisible = ref(false);
+const claseSeleccionada = ref(null);
 
 const laboratoriosList = [
   'Lab de Automatización - Pesado I', 'Lab Eléctrica - Pesado I', 'Lab Electrónica - Pesado I', 
@@ -267,11 +253,7 @@ const aulasList = [
   'AU 109 Docencia III', 'AU 110 Docencia III', 'AU 111 Docencia III', 
   'AU 406 Docencia IV', 'AU 407 Docencia IV', 'AU 408 Docencia IV', 'AU Virtual'
 ];
-
-const espacioSeleccionado = ref(laboratoriosList[0]);
 const diasList = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
-const modalVisible = ref(false);
-const claseSeleccionada = ref(null);
 
 const bloquesHorarios = [
   { inicio: '07:00', fin: '08:00', tipo: 'clase' }, { inicio: '08:00', fin: '09:00', tipo: 'clase' },
@@ -284,25 +266,21 @@ const bloquesHorarios = [
 ];
 
 // --- LÓGICA DE SILUETAS ---
-const catalogoIconos = [
-  'bi-wrench', 'bi-gear-fill', 'bi-cpu', 'bi-droplet-fill', 
-  'bi-robot', 'bi-lightning-fill', 'bi-pip-fill', 'bi-tools',
-  'bi-pc-display', 'bi-moisture', 'bi-connector-fill', 'bi-shield-shaded'
-];
+const catalogoIconos = ['bi-wrench', 'bi-gear-fill', 'bi-cpu', 'bi-droplet-fill', 'bi-robot', 'bi-lightning-fill', 'bi-pip-fill', 'bi-tools', 'bi-pc-display', 'bi-moisture', 'bi-connector-fill', 'bi-shield-shaded'];
 const siluetasAleatorias = ref([]);
 
 const generarSiluetas = () => {
-  const filas = 4; const columnas = 5; const nuevasSiluetas = [];
+  const filas = 4; const columnas = 5; const nuevas = [];
   const pasoX = 100 / columnas; const pasoY = 100 / filas;
   for (let f = 0; f < filas; f++) {
     for (let c = 0; c < columnas; c++) {
       if (Math.random() > 0.3) {
-        const jitterX = (Math.random() - 0.5) * (pasoX * 0.8);
-        const jitterY = (Math.random() - 0.5) * (pasoY * 0.8);
-        nuevasSiluetas.push({
+        const jX = (Math.random() - 0.5) * (pasoX * 0.8);
+        const jY = (Math.random() - 0.5) * (pasoY * 0.8);
+        nuevas.push({
           clase: catalogoIconos[Math.floor(Math.random() * catalogoIconos.length)],
-          top: (f * pasoY) + (pasoY / 2) + jitterY,
-          left: (c * pasoX) + (pasoX / 2) + jitterX,
+          top: (f * pasoY) + (pasoY / 2) + jY,
+          left: (c * pasoX) + (pasoX / 2) + jX,
           rotacion: Math.random() * 360,
           size: 3 + Math.random() * 3,
           opacidad: 0.04 + Math.random() * 0.03
@@ -310,81 +288,79 @@ const generarSiluetas = () => {
       }
     }
   }
-  siluetasAleatorias.value = nuevasSiluetas;
+  siluetasAleatorias.value = nuevas;
 };
 
-// --- COMPUTED Y FUNCIONES ---
+// --- COMPUTED ---
 const gruposList = computed(() => [...new Set(horarios.value.map(h => h.grupo).filter(g => g))].sort());
 const maestrosList = computed(() => [...new Set(horarios.value.map(h => h.docente).filter(d => d))].sort());
 
 const horasTotalesMaestro = computed(() => {
-  const clasesMaestro = horarios.value.filter(h => h.docente === maestroSeleccionado.value);
-  let totalMinutos = 0;
-  const clasesPorDia = {};
-  clasesMaestro.forEach(c => {
+  const clases = horarios.value.filter(h => h.docente === maestroSeleccionado.value);
+  let totalMin = 0;
+  const porDia = {};
+  clases.forEach(c => {
     if (!c.horaInicio || !c.horaFin) return;
     let [hI, mI] = c.horaInicio.split(':').map(Number);
     let [hF, mF] = c.horaFin.split(':').map(Number);
-    if (hI < 6) hI += 12; if (hF < 6) hF += 12;
-    if (hF < hI) hF += 12;
-    if (!clasesPorDia[c.dia]) clasesPorDia[c.dia] = [];
-    clasesPorDia[c.dia].push({ inicio: hI * 60 + mI, fin: hF * 60 + mF });
+    if (hI < 6) hI += 12; if (hF < 6) hF += 12; if (hF < hI) hF += 12;
+    if (!porDia[c.dia]) porDia[c.dia] = [];
+    porDia[c.dia].push({ inicio: hI * 60 + mI, fin: hF * 60 + mF });
   });
-  for (const dia in clasesPorDia) {
-    let intervalos = clasesPorDia[dia].sort((a, b) => a.inicio - b.inicio);
-    let fusionados = [];
+  for (const dia in porDia) {
+    let intervalos = porDia[dia].sort((a, b) => a.inicio - b.inicio);
+    let fusion = [];
     if (intervalos.length > 0) {
-      fusionados.push(intervalos[0]);
+      fusion.push(intervalos[0]);
       for (let i = 1; i < intervalos.length; i++) {
-        let actual = intervalos[i]; let ultimo = fusionados[fusionados.length - 1];
-        if (actual.inicio <= ultimo.fin) ultimo.fin = Math.max(ultimo.fin, actual.fin);
-        else fusionados.push(actual);
+        let act = intervalos[i]; let ult = fusion[fusion.length - 1];
+        if (act.inicio <= ult.fin) ult.fin = Math.max(ult.fin, act.fin);
+        else fusion.push(act);
       }
     }
-    fusionados.forEach(b => totalMinutos += (b.fin - b.inicio));
+    fusion.forEach(b => totalMin += (b.fin - b.inicio));
   }
-  return (totalMinutos / 60).toFixed(1);
+  return (totalMin / 60).toFixed(1);
 });
 
 const matrizHorario = computed(() => {
   const matrix = [];
-  const skipCells = { 'Lunes': 0, 'Martes': 0, 'Miércoles': 0, 'Jueves': 0, 'Viernes': 0 };
+  const skip = { 'Lunes': 0, 'Martes': 0, 'Miércoles': 0, 'Jueves': 0, 'Viernes': 0 };
   for (let r = 0; r < bloquesHorarios.length; r++) {
     const bloque = bloquesHorarios[r]; const row = { bloque, celdas: {} };
     if (bloque.tipo !== 'receso') {
       for (const dia of diasList) {
-        if (skipCells[dia] > 0) { row.celdas[dia] = { render: false }; skipCells[dia]--; continue; }
-        let cI = horarios.value.find(c => c.dia === dia && 
-          (vistaActiva.value === 'individual' ? c.laboratorio === espacioSeleccionado.value : 
-           vistaActiva.value === 'grupo' ? c.grupo === grupoSeleccionado.value : c.docente === maestroSeleccionado.value) 
-           && c.horaInicio === bloque.inicio);
-        if (cI) {
-          let rowspan = 1;
+        if (skip[dia] > 0) { row.celdas[dia] = { render: false }; skip[dia]--; continue; }
+        let c = horarios.value.find(h => h.dia === dia && h.horaInicio === bloque.inicio && (
+          vistaActiva.value === 'individual' ? h.laboratorio === espacioSeleccionado.value :
+          vistaActiva.value === 'grupo' ? h.grupo === grupoSeleccionado.value : h.docente === maestroSeleccionado.value
+        ));
+        if (c) {
+          let rs = 1;
           for (let nR = r + 1; nR < bloquesHorarios.length; nR++) {
-            if (bloquesHorarios[nR].tipo !== 'receso' && bloquesHorarios[nR].inicio < cI.horaFin) rowspan++;
-            else break;
+            if (bloquesHorarios[nR].tipo !== 'receso' && bloquesHorarios[nR].inicio < c.horaFin) rs++; else break;
           }
-          row.celdas[dia] = { render: true, rowspan, clase: cI }; skipCells[dia] = rowspan - 1;
+          row.celdas[dia] = { render: true, rowspan: rs, clase: c }; skip[dia] = rs - 1;
         } else row.celdas[dia] = { render: true, rowspan: 1, clase: null };
       }
     }
     matrix.push(row);
   }
-  let primerIndice = -1; let ultimoIndice = -1;
+  if (vistaActiva.value === 'matriz') return matrix;
+  let start = -1; let end = -1;
   for (let i = 0; i < matrix.length; i++) {
     let ocupada = matrix[i].bloque.tipo === 'receso' ? true : diasList.some(d => (matrix[i].celdas[d].render && matrix[i].celdas[d].clase) || !matrix[i].celdas[d].render);
-    if (ocupada) { if (primerIndice === -1 && matrix[i].bloque.tipo !== 'receso') primerIndice = i; ultimoIndice = i; }
+    if (ocupada) { if (start === -1 && matrix[i].bloque.tipo !== 'receso') start = i; end = i; }
   }
-  if (primerIndice === -1) return matrix.slice(0, 6);
-  while (primerIndice < matrix.length && matrix[primerIndice].bloque.tipo === 'receso') primerIndice++;
-  while (ultimoIndice >= 0 && matrix[ultimoIndice].bloque.tipo === 'receso') ultimoIndice--;
-  return matrix.slice(primerIndice, ultimoIndice + 1);
+  if (start === -1) return matrix.slice(0, 6);
+  while (start < matrix.length && matrix[start].bloque.tipo === 'receso') start++;
+  while (end >= 0 && matrix[end].bloque.tipo === 'receso') end--;
+  return matrix.slice(start, end + 1);
 });
 
 const cuatrimestreAutomatico = computed(() => {
   const mes = new Date().getMonth(); const año = new Date().getFullYear();
-  let p = (mes <= 3) ? "ENERO-ABRIL" : (mes <= 7) ? "MAYO-AGOSTO" : "SEPTIEMBRE-DICIEMBRE";
-  return `HORARIO ESCOLAR ${p} ${año}`;
+  return `HORARIO ESCOLAR ${mes <= 3 ? "ENERO-ABRIL" : mes <= 7 ? "MAYO-AGOSTO" : "SEPTIEMBRE-DICIEMBRE"} ${año}`;
 });
 
 const getColorForGrupo = (g) => {
@@ -394,20 +370,13 @@ const getColorForGrupo = (g) => {
   return p[Math.abs(h) % p.length];
 };
 
-const fotoDocente = (nombreDocente) => {
-  if (!nombreDocente) return null;
-
-  // Reemplazamos únicamente los espacios por guiones bajos
-  // Manteniendo mayúsculas y acentos tal cual los tienes en la carpeta maestros_manto
-  const nombreProcesado = nombreDocente
-    .trim()
-    .replace(/\s+/g, '_'); 
-
-  // Manejo de extensión (la mayoría son .png, Gallegos Amador es .jpg)
-  const extension = nombreDocente.includes('Gallegos Amador Benito') ? '.jpg' : '.png';
-
-  return `/maestros_manto/${nombreProcesado}${extension}`;
+const fotoDocente = (n) => {
+  if (!n) return null;
+  const processed = n.trim().replace(/\s+/g, '_');
+  return `/maestros_manto/${processed}${n.includes('Gallegos Amador Benito') ? '.jpg' : '.png'}`;
 };
+
+const buscarClaseMatriz = (d, e, i) => horarios.value.filter(c => c.dia === d && c.laboratorio === e && c.horaInicio <= i && c.horaFin > i);
 
 const loadHorarios = async () => { try { const res = await axios.get(API_URL); horarios.value = res.data; } catch (e) { console.error(e); } };
 const abrirDetalle = (c) => { if (c) { claseSeleccionada.value = c; modalVisible.value = true; } };
@@ -426,7 +395,24 @@ const descargarImagen = async () => {
   } catch (e) { console.error(e); }
 };
 
-// --- WATCHERS Y LIFECYCLE ---
+const exportarExcel = () => {
+  const header = ["HORA", ...laboratoriosList, ...aulasList];
+  const rows = bloquesHorarios.map(b => {
+    const r = [`${b.inicio} - ${b.fin}`];
+    [...laboratoriosList, ...aulasList].forEach(e => {
+      if (b.tipo === 'receso') r.push("RECESO");
+      else {
+        const cs = buscarClaseMatriz(diaMatriz.value, e, b.inicio);
+        r.push(cs.length > 0 ? `${cs[0].grupo} - ${cs[0].materia}` : "");
+      }
+    });
+    return r;
+  });
+  const ws = XLSX.utils.aoa_to_sheet([header, rows]);
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Matriz");
+  XLSX.writeFile(wb, `Matriz_Espacios_${diaMatriz.value}.xlsx`);
+};
+
 watch(vistaActiva, () => generarSiluetas());
 
 onMounted(async () => {
