@@ -390,22 +390,19 @@ const getColorForGrupo = (g) => {
 const fotoDocente = (nombreDocente) => {
   if (!nombreDocente) return null;
 
-  // 1. Convertimos a minúsculas
-  // 2. Normalizamos para separar los acentos de las letras (NFD)
-  // 3. Eliminamos los acentos usando una expresión regular
-  // 4. Reemplazamos espacios y caracteres especiales por guiones bajos
-  const nombreLimpio = nombreDocente
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Quita los acentos
-    .replace(/[^a-z0-9]/g, '_')      // Cambia todo lo que no sea letra/número por _
-    .replace(/_+/g, '_')             // Evita múltiples guiones bajos seguidos
-    .replace(/^_+|_+$/g, '');        // Quita guiones al inicio o final
+  // 1. Mantenemos mayúsculas y acentos tal cual están en tu carpeta.
+  // 2. Reemplazamos únicamente los espacios por guiones bajos (_).
+  // 3. Eliminamos puntos adicionales si existen al final del nombre.
+  const nombreProcesado = nombreDocente
+    .trim()
+    .replace(/\s+/g, '_'); // Cambia espacios por guiones bajos
 
-  const nombreArchivo = `${nombreLimpio}.png`;
-  
-  // Si tus fotos están en la carpeta public de tu proyecto Vue:
-  return `/maestros_manto/${nombreArchivo}`;
+  // En la imagen veo que casi todos son .png, pero hay uno .jpg (Gallegos Amador)
+  // Agregamos una lógica simple para manejar esa excepción si fuera necesaria, 
+  // pero por defecto usaremos .png como la mayoría.
+  const extension = nombreDocente.includes('Gallegos Amador Benito') ? '.jpg' : '.png';
+
+  return `/maestros_manto/${nombreProcesado}${extension}`;
 };
 
 const loadHorarios = async () => { try { const res = await axios.get(API_URL); horarios.value = res.data; } catch (e) { console.error(e); } };
