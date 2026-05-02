@@ -49,10 +49,19 @@
           </template>
         </div>
 
-        <div class="col-md-3 text-end">
-          <button v-if="vistaActiva !== 'matriz'" class="btn btn-sm btn-danger shadow-sm fw-bold px-3" @click="imprimirPDF">
-            <i class="bi bi-printer-fill me-1"></i> Imprimir PDF
-          </button>
+        <div class="col-md-3 text-end d-flex gap-2 justify-content-end">
+          <template v-if="vistaActiva !== 'matriz'">
+            <!-- Botón de PDF existente -->
+            <button class="btn btn-sm btn-danger shadow-sm fw-bold px-3" @click="imprimirPDF">
+              <i class="bi bi-printer-fill me-1"></i> Imprimir PDF
+            </button>
+            
+            <!-- NUEVO: Botón de Imagen JPG -->
+            <button class="btn btn-sm btn-warning shadow-sm fw-bold px-3 text-dark" @click="descargarImagen">
+              <i class="bi bi-image-fill me-1"></i> Descargar JPG
+            </button>
+          </template>
+        
           <button v-else class="btn btn-sm btn-success shadow-sm fw-bold px-3" @click="exportarExcel">
             <i class="bi bi-file-earmark-excel-fill me-1"></i> Descargar Excel
           </button>
@@ -213,6 +222,8 @@ import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
 import * as XLSX from 'xlsx';
+
+import html2canvas from 'html2canvas'; // Importa la librería al inicio
 
 const route = useRoute();
 const API_URL = 'https://back-end-casilleros.onrender.com/horarios'; // Cambiar a Render en producción
@@ -490,6 +501,42 @@ const abrirDetalle = (clase) => { if (clase) { claseSeleccionada.value = clase; 
 const imprimirPDF = () => { window.print(); };
 const fallbackLogo = (e) => { e.target.src = 'https://via.placeholder.com/150?text=Logo'; };
 
+  
+
+const descargarImagen = async () => {
+  // Seleccionamos el contenedor de la hoja
+  const elemento = document.querySelector('.hoja-horizontal');
+  
+  if (!elemento) return;
+
+  try {
+    // Configuramos html2canvas para alta calidad
+    const canvas = await html2canvas(elemento, {
+      scale: 3, // Aumenta la resolución (3 es ideal para impresión)
+      useCORS: true, // Permite cargar logos de servidores externos como Render
+      allowTaint: true,
+      backgroundColor: "#ffffff", // Asegura fondo blanco
+      logging: false
+    });
+
+    // Convertir a formato JPG
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9); // 0.9 es la calidad (90%)
+    
+    // Crear el enlace de descarga
+    const link = document.createElement('a');
+    const nombreArchivo = `Horario_${vistaActiva.value}_${Date.now()}.jpg`;
+    
+    link.download = nombreArchivo;
+    link.href = dataUrl;
+    link.click();
+  } catch (error) {
+    console.error("Error al generar la imagen:", error);
+    alert("No se pudo generar la imagen. Intenta de nuevo.");
+  }
+};
+
+
+  
 onMounted(async () => {
   await loadHorarios();
   if (gruposList.value.length > 0) grupoSeleccionado.value = gruposList.value[0];
@@ -516,7 +563,7 @@ onMounted(async () => {
   display: flex; 
   flex-direction: column; 
   overflow: hidden; 
-
+  transform: scale(1);
   position: relative; /* Necesario para posicionar los fondos */
   z-index: 1;
 }
@@ -735,6 +782,18 @@ footer {
 /* =========================================
    REGLAS DE IMPRESIÓN (PDF Y TAMAÑO CARTA)
 ========================================= */
+
+@media screen {
+    /* Estilo del botón amarillo para que combine con el estilo industrial */
+    .btn-warning {
+        background-color: #b58c2a !important;
+        border-color: #a37a1e !important;
+        color: white !important;
+    }
+}
+
+  
+  
 @media print {
   @page { size: letter landscape; margin: 0 !important; }
   
