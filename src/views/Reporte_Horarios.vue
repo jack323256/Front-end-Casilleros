@@ -75,6 +75,19 @@
       <div class="industrial-bg-pattern"></div>
       <div class="watermark-gears"></div>
 
+    <!-- NUEVO: Contenedor de Siluetas Técnicas -->
+      <div class="technical-silhouettes">
+        <i class="bi bi-wrench silhouette item-1"></i>
+        <i class="bi bi-nut silhouette item-2"></i>
+        <i class="bi bi-cpu silhouette item-3"></i>
+        <i class="bi bi-fuel-pump silhouette item-4"></i> <!-- Representando Petróleo -->
+        <i class="bi bi-robot silhouette item-5"></i>
+        <i class="bi bi-lightning-charge silhouette item-6"></i>
+        <i class="bi bi-pip-fill silhouette item-7"></i> <!-- Representando tuberías -->
+        <i class="bi bi-precision-manufacturing silhouette item-8"></i>
+      </div>
+      
+
       <!-- ENCABEZADO ESTILIZADO -->
       <header class="d-flex justify-content-between align-items-center w-100 mb-2 header-industrial">
         <div class="d-flex flex-column align-items-start">
@@ -770,7 +783,44 @@ footer {
   background-color: rgba(0, 91, 79, 0.05); /* Efecto hover en pantalla */
 }
 
+/* =========================================
+   SILUETAS TÉCNICAS DE FONDO
+========================================= */
+.technical-silhouettes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* No interfiere con clics en la tabla */
+  z-index: -1;
+  overflow: hidden;
+}
 
+.silhouette {
+  position: absolute;
+  color: #005b4f;
+  opacity: 0.035; /* Muy tenue, casi una marca de agua */
+  font-size: 5rem;
+}
+
+/* Posiciones y rotaciones "al azar" para dar dinamismo */
+.item-1 { top: 10%; left: 5%; transform: rotate(-15deg); font-size: 6rem; }
+.item-2 { top: 15%; right: 10%; transform: rotate(20deg); font-size: 4rem; }
+.item-3 { bottom: 20%; left: 8%; transform: rotate(10deg); font-size: 5rem; }
+.item-4 { bottom: 10%; right: 15%; transform: rotate(-10deg); font-size: 7rem; }
+.item-5 { top: 45%; left: 2%; transform: rotate(45deg); font-size: 6rem; }
+.item-6 { top: 50%; right: 3%; transform: rotate(-25deg); font-size: 5rem; }
+.item-7 { bottom: 40%; right: 8%; transform: rotate(15deg); font-size: 8rem; }
+.item-8 { top: 5%; left: 40%; transform: rotate(-5deg); font-size: 4rem; }
+
+/* Ajuste adicional para asegurar que la tabla sea legible */
+.horario-table {
+  /* ... tus estilos anteriores ... */
+  background-color: rgba(255, 255, 255, 0.9) !important; /* Un poco más de opacidad blanca */
+  position: relative;
+  z-index: 2;
+}
 
 /* =========================================
    REGLAS DE IMPRESIÓN (PDF Y TAMAÑO CARTA)
