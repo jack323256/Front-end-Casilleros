@@ -136,7 +136,7 @@
            <h3 class="fw-bold fst-italic texto-verde-oscuro m-0" style="font-size: 1.1rem;">
              {{ cuatrimestreAutomatico }}
            </h3>
-           <img src="/logos/Logo_nuevo.png" alt="UTXJ" class="logo-bottom-large" @error="fallbackLogo">
+           <img src="/logos/somos_mantenimeinto.png" alt="UTXJ" class="logo-bottom-large" @error="fallbackLogo">
         </div>
       </footer>
     </div>
