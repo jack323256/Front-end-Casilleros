@@ -555,18 +555,35 @@ const catalogoIconos = [
 const siluetasAleatorias = ref([]);
 
 const generarSiluetas = () => {
-  const cantidad = 15; // Aumentamos a 15 para cubrir bien los lados
+  const filas = 4;    // Dividimos la hoja en 4 filas
+  const columnas = 5; // y 5 columnas
   const nuevasSiluetas = [];
+  
+  // El "paso" o tamaño de cada celda en porcentaje
+  const pasoX = 100 / columnas;
+  const pasoY = 100 / filas;
 
-  for (let i = 0; i < cantidad; i++) {
-    nuevasSiluetas.push({
-      clase: catalogoIconos[Math.floor(Math.random() * catalogoIconos.length)],
-      top: Math.random() * 90,    // Entre 0% y 90% de la altura
-      left: Math.random() * 90,   // Entre 0% y 90% del ancho
-      rotacion: Math.random() * 360, // Giro completo aleatorio
-      size: 3 + Math.random() * 5,   // Tamaño entre 3rem y 8rem
-      opacidad: 0.04 + Math.random() * 0.04 // Opacidad sutil variable
-    });
+  for (let f = 0; f < filas; f++) {
+    for (let c = 0; c < columnas; c++) {
+      // Probabilidad del 70% de que aparezca un icono en esta celda 
+      // para que no se vea demasiado lleno y monótono
+      if (Math.random() > 0.3) {
+        
+        // Calculamos la posición base de la celda + un "jitter" (desplazamiento al azar)
+        // El jitter asegura que no se encimen pero que tampoco se vean perfectamente alineados
+        const jitterX = (Math.random() - 0.5) * (pasoX * 0.8);
+        const jitterY = (Math.random() - 0.5) * (pasoY * 0.8);
+
+        nuevasSiluetas.push({
+          clase: catalogoIconos[Math.floor(Math.random() * catalogoIconos.length)],
+          top: (f * pasoY) + (pasoY / 2) + jitterY,
+          left: (c * pasoX) + (pasoX / 2) + jitterX,
+          rotacion: Math.random() * 360,
+          size: 3 + Math.random() * 3, // Tamaños un poco más controlados (3rem a 6rem)
+          opacidad: 0.04 + Math.random() * 0.03
+        });
+      }
+    }
   }
   siluetasAleatorias.value = nuevasSiluetas;
 };
@@ -841,14 +858,19 @@ footer {
   position: absolute;
   color: #005b4f;
   display: block !important;
-  transition: all 0.5s ease; /* Suaviza el cambio si se regeneran */
+  pointer-events: none;
+  /* Usamos un degradado sutil para que los iconos se fundan mejor */
+  mask-image: radial-gradient(circle, black 50%, transparent 100%);
   filter: grayscale(100%);
 }
 
 .horario-table {
   position: relative;
   z-index: 5;
-  background-color: rgba(255, 255, 255, 0.8) !important;
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  /* Añade este borde sutil para definir mejor la tabla sobre el fondo industrial */
+  box-shadow: 0 0 15px rgba(0,0,0,0.05);
+  backdrop-filter: blur(2px);
 }
 
 /* Posiciones y rotaciones "al azar" para dar dinamismo */
