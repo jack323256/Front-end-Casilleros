@@ -77,14 +77,25 @@
 
     <!-- NUEVO: Contenedor de Siluetas Técnicas -->
       <div class="technical-silhouettes">
+        <!-- Laterales Izquierdos -->
         <i class="bi bi-wrench silhouette item-1"></i>
-        <i class="bi bi-gear-fill silhouette item-2"></i>
-        <i class="bi bi-cpu silhouette item-3"></i>
-        <i class="bi bi-droplet-fill silhouette item-4"></i> <!-- Para área de Petróleo -->
         <i class="bi bi-robot silhouette item-5"></i>
+        <i class="bi bi-pc-display silhouette item-9"></i>
+      
+        <!-- Área Superior / Central -->
+        <i class="bi bi-gear-fill silhouette item-2"></i>
+        <i class="bi bi-tools silhouette item-8"></i>
+        <i class="bi bi-moisture silhouette item-10"></i> <!-- Petróleo/Fluidos -->
+      
+        <!-- Laterales Derechitos -->
+        <i class="bi bi-droplet-fill silhouette item-4"></i>
         <i class="bi bi-lightning-fill silhouette item-6"></i>
-        <i class="bi bi-tools silhouette item-7"></i>
-        <i class="bi bi-pci-card silhouette item-8"></i>
+        <i class="bi bi-connector-fill silhouette item-11"></i>
+      
+        <!-- Área Inferior -->
+        <i class="bi bi-cpu silhouette item-3"></i>
+        <i class="bi bi-pip-fill silhouette item-7"></i>
+        <i class="bi bi-shield-shaded silhouette item-12"></i> <!-- Seguridad/Soldadura -->
       </div>
       
 
@@ -801,7 +812,9 @@ footer {
   position: absolute;
   color: #005b4f;
   /* Subimos la opacidad de 0.035 a 0.07 para que sean perceptibles */
-  opacity: 0.07 !important; 
+  opacity: 0.05 !important; 
+  pointer-events: none;
+  filter: grayscale(100%); /* Asegura que no distraigan por color */
   font-size: 5rem;
   /* Aseguramos que el navegador no los oculte por optimización */
   display: block !important;
@@ -821,6 +834,11 @@ footer {
 .item-6 { top: 50%; right: 3%; transform: rotate(-25deg); font-size: 5rem; }
 .item-7 { bottom: 40%; right: 8%; transform: rotate(15deg); font-size: 8rem; }
 .item-8 { top: 5%; left: 40%; transform: rotate(-5deg); font-size: 4rem; }
+/* Nuevos elementos para llenar huecos laterales y bajos */
+.item-9 { bottom: 40%; left: 2%; transform: rotate(-10deg); font-size: 5rem; }
+.item-10 { top: 5%; right: 25%; transform: rotate(30deg); font-size: 4rem; }
+.item-11 { bottom: 35%; right: 2%; transform: rotate(50deg); font-size: 5.5rem; }
+.item-12 { bottom: 5%; left: 45%; transform: rotate(-15deg); font-size: 4.5rem; }
 
 /* Ajuste adicional para asegurar que la tabla sea legible */
 .horario-table {
