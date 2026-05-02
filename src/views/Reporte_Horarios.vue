@@ -61,21 +61,32 @@
     </div>
 
     <div v-if="vistaActiva !== 'matriz'" class="hoja-horizontal shadow">
-      <header class="d-flex justify-content-between align-items-start w-100 mb-1">
+      
+      <!-- ELEMENTOS DE FONDO (CAPA DETRÁS DE TODO) -->
+      <div class="industrial-bg-pattern"></div>
+      <div class="watermark-gears"></div>
+
+      <!-- ENCABEZADO ESTILIZADO -->
+      <header class="d-flex justify-content-between align-items-center w-100 mb-2 header-industrial">
         <div class="d-flex flex-column align-items-start">
-          <div class="barra-verde shadow-sm">
-            <h2 class="fw-bold fst-italic m-0 text-white" style="font-size: 1.1rem;">Academia de Mantenimiento Industrial</h2>
+          <div class="barra-verde-industrial shadow-sm">
+            <h2 class="fw-bold fst-italic m-0 text-white" style="font-size: 1.2rem;">
+              <i class="bi bi-gear-fill me-2"></i>Academia de Mantenimiento Industrial
+            </h2>
           </div>
-          <h1 class="texto-dorado fw-bold fst-italic mt-1 d-flex align-items-center" style="margin-left: 1.5rem; font-size: 1.6rem;">
+          <h1 class="texto-dorado-industrial fw-bold fst-italic mt-1" style="margin-left: 1.5rem; font-size: 1.8rem;">
             {{ vistaActiva === 'individual' ? espacioSeleccionado : vistaActiva === 'grupo' ? 'Grupo: ' + grupoSeleccionado : 'Docente: ' + maestroSeleccionado }}
             <span v-if="vistaActiva === 'maestro'" class="badge bg-dark ms-3 fs-6">
                Carga: {{ horasTotalesMaestro }} hrs/semana
             </span>
           </h1>
         </div>
-        <img src="/logos/logo-mantenimiento.png" alt="Mascota" class="logo-top" @error="fallbackLogo">
+        <div class="logo-container">
+          <img src="/logos/logo-mantenimiento.png" alt="Mascota" class="logo-top-large" @error="fallbackLogo">
+        </div>
       </header>
 
+      <!-- TABLA DE HORARIOS (EL CONTENIDO ES EL MISMO) -->
       <div class="table-container">
         <table class="table table-bordered border-dark text-center horario-table align-middle m-0">
           <thead>
@@ -88,7 +99,7 @@
             <template v-for="row in matrizHorario" :key="row.bloque.inicio">
               <tr v-if="row.bloque.tipo === 'receso'" class="fila-receso">
                 <td class="fw-bold bg-hora text-dark">{{ row.bloque.inicio }} a {{ row.bloque.fin }}</td>
-                <td colspan="5" class="bg-receso text-dark fw-bold" style="letter-spacing: 5px;">RECESO</td>
+                <td colspan="5" class="bg-receso text-dark fw-bold" style="letter-spacing: 15px;">RECESO</td>
               </tr>
               <tr v-else>
                 <td class="fw-bold bg-hora text-dark">{{ row.bloque.inicio }} a {{ row.bloque.fin }}</td>
@@ -102,15 +113,12 @@
                       <div class="texto-grupo-color" :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">
                         {{ row.celdas[dia].clase.grupo }}
                       </div>
-                      
                       <div v-if="vistaActiva !== 'individual'" class="fw-bold text-primary" style="font-size: 0.65rem;">
                          {{ row.celdas[dia].clase.laboratorio }}
                       </div>
-
                       <div v-if="vistaActiva !== 'maestro'" class="text-dark fs-docente lh-1 mt-1">
                         {{ row.celdas[dia].clase.docente }}
                       </div>
-                      
                       <div class="fw-bold text-dark fs-materia text-uppercase lh-1 mt-1">{{ row.celdas[dia].clase.materia }}</div>
                     </div>
                   </td>
@@ -121,14 +129,17 @@
         </table>
       </div>
 
-      <footer class="d-flex justify-content-between align-items-end mt-1 pt-1 w-100">
-        <h3 class="fw-bold fst-italic texto-verde-oscuro m-0 pb-1" style="font-size: 1.1rem;">
-          {{ cuatrimestreAutomatico }}
-        </h3>
-        <img src="/logos/Logo_nuevo.png" alt="UTXJ" class="logo-bottom" @error="fallbackLogo">
+      <!-- PIE DE PÁGINA INDUSTRIAL -->
+      <footer class="footer-industrial mt-1 pt-1">
+        <div class="footer-line"></div>
+        <div class="d-flex justify-content-between align-items-end w-100">
+           <h3 class="fw-bold fst-italic texto-verde-oscuro m-0" style="font-size: 1.1rem;">
+             {{ cuatrimestreAutomatico }}
+           </h3>
+           <img src="/logos/Logo_nuevo.png" alt="UTXJ" class="logo-bottom-large" @error="fallbackLogo">
+        </div>
       </footer>
     </div>
-
 <div v-else class="matriz-general-container shadow bg-white p-4 mx-auto border border-2 border-dark">
         <div class="text-center mb-4">
             <h2 class="fw-bold text-dark mb-0">MATRIZ DE ESPACIOS - {{ diaMatriz.toUpperCase() }}</h2>
@@ -505,6 +516,9 @@ onMounted(async () => {
   display: flex; 
   flex-direction: column; 
   overflow: hidden; 
+
+  position: relative; /* Necesario para posicionar los fondos */
+  z-index: 1;
 }
 
 .barra-verde { 
@@ -622,6 +636,101 @@ footer {
   height: 35px; 
   object-fit: contain; 
 }
+
+.industrial-bg-pattern {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  /* Crea una textura de líneas técnicas sutiles */
+  background-image: 
+    linear-gradient(rgba(0, 91, 79, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 91, 79, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: -2;
+}
+
+.watermark-gears {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 500px;
+  background-image: url('https://cdn-icons-png.flaticon.com/512/3524/3524659.png'); /* Puedes usar un SVG local de engranaje */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.04; /* Casi invisible para no molestar la lectura */
+  z-index: -1;
+}
+
+/* Logos más grandes y con presencia */
+.logo-top-large {
+  height: 75px; /* Aumentado de 45px */
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+}
+
+.logo-bottom-large {
+  height: 55px; /* Aumentado de 35px */
+}
+
+/* Barra de título con estilo de "placa" industrial */
+.barra-verde-industrial {
+  background: linear-gradient(135deg, #005b4f 0%, #003d35 100%);
+  padding: 8px 30px 8px 20px;
+  border-left: 5px solid #b58c2a;
+  border-radius: 0 25px 25px 0;
+  margin-left: -8mm;
+  box-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+}
+
+.texto-dorado-industrial {
+  color: #a37a1e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+}
+
+/* Bordes de tabla más "técnicos" */
+.horario-table {
+  border: 2px solid #000 !important;
+  background-color: rgba(255, 255, 255, 0.85) !important; /* Ligeramente transparente para ver el fondo */
+  backdrop-filter: blur(2px);
+}
+
+.header-verde {
+  background: #004d40 !important;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+/* Estilo para el receso con rayas de seguridad */
+.bg-receso {
+  background: repeating-linear-gradient(
+    45deg,
+    #f0f0f0,
+    #f0f0f0 10px,
+    #e8e8e8 10px,
+    #e8e8e8 20px
+  ) !important;
+  color: #666 !important;
+  font-style: italic;
+}
+
+/* Línea decorativa en el footer */
+.footer-line {
+  height: 3px;
+  background: linear-gradient(90deg, #005b4f, #b58c2a, transparent);
+  margin-bottom: 5px;
+  border-radius: 2px;
+}
+
+/* Ajuste de celdas para mayor legibilidad con logos grandes */
+.celda-clase:hover {
+  background-color: rgba(0, 91, 79, 0.05); /* Efecto hover en pantalla */
+}
+
+
 
 /* =========================================
    REGLAS DE IMPRESIÓN (PDF Y TAMAÑO CARTA)
