@@ -139,12 +139,16 @@
                       <div class="texto-grupo-color" :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">
                         {{ row.celdas[dia].clase.grupo }}
                       </div>
-                      <div v-if="vistaActiva !== 'individual'" class="fw-bold text-primary" style="font-size: 0.65rem;">
-                         {{ row.celdas[dia].clase.laboratorio }}
-                      </div>
-                      <div v-if="vistaActiva !== 'maestro'" class="text-dark fs-docente lh-1 mt-1">
-                        {{ row.celdas[dia].clase.docente }}
-                      </div>
+                      <div v-if="vistaActiva !== 'grupo'" 
+                             class="texto-grupo-color" 
+                             :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">
+                          {{ row.celdas[dia].clase.grupo }}
+                        </div>
+                        
+                        <!-- El resto de la información (laboratorio, docente, materia) se mantiene igual -->
+                        <div v-if="vistaActiva !== 'individual'" class="fw-bold text-primary" style="font-size: 0.65rem;">
+                          {{ row.celdas[dia].clase.laboratorio }}
+                        </div>
                       <div class="fw-bold text-dark fs-materia text-uppercase lh-1 mt-1">{{ row.celdas[dia].clase.materia }}</div>
                     </div>
                   </td>
@@ -215,7 +219,10 @@
                     
                     <div class="card bg-light border-0 text-start p-3 mb-0 shadow-sm">
                         <div class="d-flex align-items-center justify-content-center mb-3 pb-3 border-bottom text-center flex-column">
-                            <img :src="fotoDocente(claseSeleccionada.docente) || '/logos/default-docente.png'" @error="$event.target.src = '/logos/default-docente.png'"
+                           <img :src="fotoDocente(claseSeleccionada.docente)" 
+                               @error="$event.target.src = '/logos/default-docente.png'"
+                               class="rounded-circle shadow bg-white mb-2" 
+                               style="width: 120px; height: 120px; object-fit: cover; border: 4px solid white; display: block; margin: 0 auto;">
                                 class="rounded-circle shadow bg-white mb-2" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid white;">
                             <div>
                                 <div class="text-muted small fw-bold text-uppercase mb-1">Docente Asignado</div>
@@ -390,16 +397,13 @@ const getColorForGrupo = (g) => {
 const fotoDocente = (nombreDocente) => {
   if (!nombreDocente) return null;
 
-  // 1. Mantenemos mayúsculas y acentos tal cual están en tu carpeta.
-  // 2. Reemplazamos únicamente los espacios por guiones bajos (_).
-  // 3. Eliminamos puntos adicionales si existen al final del nombre.
+  // Reemplazamos únicamente los espacios por guiones bajos
+  // Manteniendo mayúsculas y acentos tal cual los tienes en la carpeta maestros_manto
   const nombreProcesado = nombreDocente
     .trim()
-    .replace(/\s+/g, '_'); // Cambia espacios por guiones bajos
+    .replace(/\s+/g, '_'); 
 
-  // En la imagen veo que casi todos son .png, pero hay uno .jpg (Gallegos Amador)
-  // Agregamos una lógica simple para manejar esa excepción si fuera necesaria, 
-  // pero por defecto usaremos .png como la mayoría.
+  // Manejo de extensión (la mayoría son .png, Gallegos Amador es .jpg)
   const extension = nombreDocente.includes('Gallegos Amador Benito') ? '.jpg' : '.png';
 
   return `/maestros_manto/${nombreProcesado}${extension}`;
