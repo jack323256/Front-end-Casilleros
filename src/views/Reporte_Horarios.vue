@@ -387,10 +387,25 @@ const getColorForGrupo = (g) => {
   return p[Math.abs(h) % p.length];
 };
 
-const fotoDocente = (n) => {
-  if (!n) return null;
-  const file = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, '_') + '.png';
-  return `/maestros_manto/${file}`;
+const fotoDocente = (nombreDocente) => {
+  if (!nombreDocente) return null;
+
+  // 1. Convertimos a minúsculas
+  // 2. Normalizamos para separar los acentos de las letras (NFD)
+  // 3. Eliminamos los acentos usando una expresión regular
+  // 4. Reemplazamos espacios y caracteres especiales por guiones bajos
+  const nombreLimpio = nombreDocente
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Quita los acentos
+    .replace(/[^a-z0-9]/g, '_')      // Cambia todo lo que no sea letra/número por _
+    .replace(/_+/g, '_')             // Evita múltiples guiones bajos seguidos
+    .replace(/^_+|_+$/g, '');        // Quita guiones al inicio o final
+
+  const nombreArchivo = `${nombreLimpio}.png`;
+  
+  // Si tus fotos están en la carpeta public de tu proyecto Vue:
+  return `/maestros_manto/${nombreArchivo}`;
 };
 
 const loadHorarios = async () => { try { const res = await axios.get(API_URL); horarios.value = res.data; } catch (e) { console.error(e); } };
