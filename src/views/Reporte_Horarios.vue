@@ -443,50 +443,62 @@ const matrizHorario = computed(() => {
   // =========================================================
   
   let ultimoIndiceConClase = -1;
+// =========================================================
+  // 2. FILTRO INTELIGENTE: RECORTAR FILAS VACÍAS (ARRIBA Y ABAJO)
+  // =========================================================
+  
+  let primerIndiceConClase = -1;
+  let ultimoIndiceConClase = -1;
 
-  // Escaneamos la matriz para encontrar la ÚLTIMA fila que tiene contenido
   for (let i = 0; i < matrix.length; i++) {
     const row = matrix[i];
     let filaOcupada = false;
 
     if (row.bloque.tipo !== 'receso') {
       for (const dia of diasList) {
-        // ¿Hay una clase aquí? (render: true y clase existe) 
-        // ¿O hay una clase pasando por aquí desde arriba? (render: false)
+        // ¿Hay una clase iniciando aquí o una clase extendida pasando por aquí?
         if ((row.celdas[dia].render && row.celdas[dia].clase) || !row.celdas[dia].render) {
           filaOcupada = true;
           break;
         }
       }
     } else {
-      // Marcamos temporalmente el receso como ocupado para evaluarlo
-      filaOcupada = true;
+      // El receso lo consideramos "ocupado" solo si hay clases antes y después de él
+      // Por ahora lo marcamos para no perder la referencia
+      filaOcupada = true; 
     }
 
     if (filaOcupada) {
+      if (primerIndiceConClase === -1 && row.bloque.tipo !== 'receso') {
+        primerIndiceConClase = i;
+      }
       ultimoIndiceConClase = i;
     }
   }
 
-  // Si el último bloque con "contenido" es el RECESO, lo eliminamos también 
-  // (no tiene caso mostrar un receso si ya no hay clases después)
+  // --- Ajustes de seguridad para el recorte ---
+
+  // 1. Si no hay clases en absoluto
+  if (primerIndiceConClase === -1) return matrix.slice(0, 6);
+
+  // 2. Evitar quitar el receso si está justo en los bordes
+  // Si el primer bloque es receso, saltar al siguiente
+  while (primerIndiceConClase < matrix.length && matrix[primerIndiceConClase].bloque.tipo === 'receso') {
+    primerIndiceConClase++;
+  }
+  
+  // Si el último bloque es receso, subir uno
   while (ultimoIndiceConClase >= 0 && matrix[ultimoIndiceConClase].bloque.tipo === 'receso') {
     ultimoIndiceConClase--;
   }
 
-  // 3. Recortar la matriz
-  if (ultimoIndiceConClase !== -1) {
-    // Para que la tabla no se vea extraña si alguien solo tiene clase a las 7:00 AM,
-    // le decimos que POR LO MENOS dibuje hasta el receso (índice 5).
-    const indiceSanoMinimo = Math.max(ultimoIndiceConClase, 5);
-    
-    // Retornamos la matriz cortada exactamente donde terminan las clases
-    return matrix.slice(0, indiceSanoMinimo + 1);
-  }
-
-  // Si no hay ninguna clase programada en toda la semana, devolvemos al menos hasta el receso
-  return matrix.slice(0, 6);
+  // 3. Retornar el corte exacto
+  // Agregamos un pequeño margen para que no se vea tan apretado si gustas, 
+  // o simplemente el slice exacto:
+  return matrix.slice(primerIndiceConClase, ultimoIndiceConClase + 1);
 });
+
+//--------------------------------------------------------------------------------------------------
 
 const cuatrimestreAutomatico = computed(() => {
   const mes = new Date().getMonth();
