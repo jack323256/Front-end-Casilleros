@@ -215,7 +215,7 @@ const maestroSeleccionado = ref('');
 
 const laboratoriosList = [
   'Lab de Automatización - Pesado I', 'Lab Eléctrica - Pesado I', 'Lab Electrónica - Pesado I', 
-  'Lab de Ciencias Básicas - Pesado I', 'Lab Manufactura - Pesado I', 'Lab Metrología - Pesado II', 'Cómputo III - Docencia II'
+  'Lab de Ciencias Básicas - Pesado I', 'Lab Manufactura - Pesado II', 'Lab Metrología - Pesado II', 'Cómputo III - Docencia II'
 ];
 const aulasList = [
   'AU 106 Docencia III', 'AU 107 Docencia III', 'AU 108 Docencia III', 
