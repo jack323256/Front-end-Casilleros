@@ -222,6 +222,7 @@ import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
 import * as XLSX from 'xlsx';
+import html2canvas from 'html2canvas';
 
 
 const route = useRoute();
@@ -500,7 +501,32 @@ const abrirDetalle = (clase) => { if (clase) { claseSeleccionada.value = clase; 
 const imprimirPDF = () => { window.print(); };
 const fallbackLogo = (e) => { e.target.src = 'https://via.placeholder.com/150?text=Logo'; };
 
-  
+const descargarImagen = async () => {
+  const elemento = document.querySelector('.hoja-horizontal');
+  if (!elemento) return;
+
+  try {
+    const canvas = await html2canvas(elemento, {
+      scale: 3,
+      useCORS: true, // Esto es vital para tus logos de Render
+      backgroundColor: "#ffffff",
+      scrollX: 0,
+      scrollY: -window.scrollY, // Corrige posición si hay scroll
+      onclone: (clonedDoc) => {
+        // Asegura que el clon sea visible para la captura
+        clonedDoc.querySelector('.hoja-horizontal').style.display = 'flex';
+      }
+    });
+
+    const link = document.createElement('a');
+    link.download = `Horario_Industrial_${Date.now()}.jpg`;
+    link.href = canvas.toDataURL("image/jpeg", 0.95);
+    link.click();
+  } catch (err) {
+    console.error("Error capturando imagen:", err);
+  }
+};
+
 
 
   
@@ -750,6 +776,20 @@ footer {
    REGLAS DE IMPRESIÓN (PDF Y TAMAÑO CARTA)
 ========================================= */
 
+  /* Asegúrate de que esto esté así para que la captura sea limpia */
+.hoja-horizontal {
+    /* ... tus estilos anteriores ... */
+    transform: scale(1); /* Estabiliza la captura en algunos navegadores */
+}
+
+@media screen {
+    /* Estilo del botón amarillo para que combine con el estilo industrial */
+    .btn-warning {
+        background-color: #b58c2a !important;
+        border-color: #a37a1e !important;
+        color: white !important;
+    }
+}
 
   
   
