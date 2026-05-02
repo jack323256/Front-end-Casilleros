@@ -223,7 +223,6 @@ import axios from 'axios';
 import { useRoute } from 'vue-router';
 import * as XLSX from 'xlsx';
 
-import html2canvas from 'html2canvas'; // Importa la librería al inicio
 
 const route = useRoute();
 const API_URL = 'https://back-end-casilleros.onrender.com/horarios'; // Cambiar a Render en producción
@@ -502,38 +501,6 @@ const imprimirPDF = () => { window.print(); };
 const fallbackLogo = (e) => { e.target.src = 'https://via.placeholder.com/150?text=Logo'; };
 
   
-
-const descargarImagen = async () => {
-  // Seleccionamos el contenedor de la hoja
-  const elemento = document.querySelector('.hoja-horizontal');
-  
-  if (!elemento) return;
-
-  try {
-    // Configuramos html2canvas para alta calidad
-    const canvas = await html2canvas(elemento, {
-      scale: 3, // Aumenta la resolución (3 es ideal para impresión)
-      useCORS: true, // Permite cargar logos de servidores externos como Render
-      allowTaint: true,
-      backgroundColor: "#ffffff", // Asegura fondo blanco
-      logging: false
-    });
-
-    // Convertir a formato JPG
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.9); // 0.9 es la calidad (90%)
-    
-    // Crear el enlace de descarga
-    const link = document.createElement('a');
-    const nombreArchivo = `Horario_${vistaActiva.value}_${Date.now()}.jpg`;
-    
-    link.download = nombreArchivo;
-    link.href = dataUrl;
-    link.click();
-  } catch (error) {
-    console.error("Error al generar la imagen:", error);
-    alert("No se pudo generar la imagen. Intenta de nuevo.");
-  }
-};
 
 
   
