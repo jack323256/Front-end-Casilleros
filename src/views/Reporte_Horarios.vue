@@ -780,7 +780,7 @@ footer {
 }
 
 .logo-bottom-large {
-  height: 70px; /* Aumentado de 35px */
+  height: 60px; /* Aumentado de 35px */
 }
 
 /* Barra de título con estilo de "placa" industrial */
