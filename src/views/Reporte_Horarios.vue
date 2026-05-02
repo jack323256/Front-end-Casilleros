@@ -665,12 +665,12 @@ footer {
 
 /* Logos más grandes y con presencia */
 .logo-top-large {
-  height: 75px; /* Aumentado de 45px */
+  height: 90px; /* Aumentado de 45px */
   filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
 }
 
 .logo-bottom-large {
-  height: 55px; /* Aumentado de 35px */
+  height: 70px; /* Aumentado de 35px */
 }
 
 /* Barra de título con estilo de "placa" industrial */
