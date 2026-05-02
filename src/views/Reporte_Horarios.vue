@@ -76,26 +76,19 @@
       <div class="watermark-gears"></div>
 
     <!-- NUEVO: Contenedor de Siluetas Técnicas -->
+<!-- Dentro de la hoja-horizontal -->
       <div class="technical-silhouettes">
-        <!-- Laterales Izquierdos -->
-        <i class="bi bi-wrench silhouette item-1"></i>
-        <i class="bi bi-robot silhouette item-5"></i>
-        <i class="bi bi-pc-display silhouette item-9"></i>
-      
-        <!-- Área Superior / Central -->
-        <i class="bi bi-gear-fill silhouette item-2"></i>
-        <i class="bi bi-tools silhouette item-8"></i>
-        <i class="bi bi-moisture silhouette item-10"></i> <!-- Petróleo/Fluidos -->
-      
-        <!-- Laterales Derechitos -->
-        <i class="bi bi-droplet-fill silhouette item-4"></i>
-        <i class="bi bi-lightning-fill silhouette item-6"></i>
-        <i class="bi bi-connector-fill silhouette item-11"></i>
-      
-        <!-- Área Inferior -->
-        <i class="bi bi-cpu silhouette item-3"></i>
-        <i class="bi bi-pip-fill silhouette item-7"></i>
-        <i class="bi bi-shield-shaded silhouette item-12"></i> <!-- Seguridad/Soldadura -->
+        <i v-for="(icono, index) in siluetasAleatorias" 
+           :key="index"
+           :class="['bi', icono.clase, 'silhouette']"
+           :style="{
+             top: icono.top + '%',
+             left: icono.left + '%',
+             transform: `rotate(${icono.rotacion}deg)`,
+             fontSize: icono.size + 'rem',
+             opacity: icono.opacidad
+           }">
+        </i>
       </div>
       
 
@@ -552,6 +545,42 @@ const descargarImagen = async () => {
 };
 
 
+  // Lista de iconos disponibles para las áreas de la academia
+const catalogoIconos = [
+  'bi-wrench', 'bi-gear-fill', 'bi-cpu', 'bi-droplet-fill', 
+  'bi-robot', 'bi-lightning-fill', 'bi-pip-fill', 'bi-tools',
+  'bi-pc-display', 'bi-moisture', 'bi-connector-fill', 'bi-shield-shaded'
+];
+
+const siluetasAleatorias = ref([]);
+
+const generarSiluetas = () => {
+  const cantidad = 15; // Aumentamos a 15 para cubrir bien los lados
+  const nuevasSiluetas = [];
+
+  for (let i = 0; i < cantidad; i++) {
+    nuevasSiluetas.push({
+      clase: catalogoIconos[Math.floor(Math.random() * catalogoIconos.length)],
+      top: Math.random() * 90,    // Entre 0% y 90% de la altura
+      left: Math.random() * 90,   // Entre 0% y 90% del ancho
+      rotacion: Math.random() * 360, // Giro completo aleatorio
+      size: 3 + Math.random() * 5,   // Tamaño entre 3rem y 8rem
+      opacidad: 0.04 + Math.random() * 0.04 // Opacidad sutil variable
+    });
+  }
+  siluetasAleatorias.value = nuevasSiluetas;
+};
+
+// Generar al montar el componente
+onMounted(async () => {
+  generarSiluetas();
+  // ... tu lógica existente de loadHorarios ...
+});
+
+// Opcional: Si quieres que cambien al cambiar de vista (Maestro/Grupo)
+watch(vistaActiva, () => {
+  generarSiluetas();
+});
 
   
 onMounted(async () => {
@@ -803,26 +832,23 @@ footer {
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* No interfiere con clics en la tabla */
-  z-index: 1;
+  pointer-events: none;
+  z-index: 1; /* Asegúrate que esté entre el fondo y la tabla */
   overflow: hidden;
 }
 
 .silhouette {
   position: absolute;
   color: #005b4f;
-  /* Subimos la opacidad de 0.035 a 0.07 para que sean perceptibles */
-  opacity: 0.05 !important; 
-  pointer-events: none;
-  filter: grayscale(100%); /* Asegura que no distraigan por color */
-  font-size: 5rem;
-  /* Aseguramos que el navegador no los oculte por optimización */
   display: block !important;
-  font-style: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
+  transition: all 0.5s ease; /* Suaviza el cambio si se regeneran */
+  filter: grayscale(100%);
+}
+
+.horario-table {
+  position: relative;
+  z-index: 5;
+  background-color: rgba(255, 255, 255, 0.8) !important;
 }
 
 /* Posiciones y rotaciones "al azar" para dar dinamismo */
@@ -840,13 +866,7 @@ footer {
 .item-11 { bottom: 35%; right: 2%; transform: rotate(50deg); font-size: 5.5rem; }
 .item-12 { bottom: 5%; left: 45%; transform: rotate(-15deg); font-size: 4.5rem; }
 
-/* Ajuste adicional para asegurar que la tabla sea legible */
-.horario-table {
-  /* ... tus estilos anteriores ... */
-  background-color: rgba(255, 255, 255, 0.9) !important; /* Un poco más de opacidad blanca */
-  position: relative;
-  z-index: 5;
-}
+
 
 /* =========================================
    REGLAS DE IMPRESIÓN (PDF Y TAMAÑO CARTA)
