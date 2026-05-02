@@ -783,14 +783,6 @@ footer {
    REGLAS DE IMPRESIÓN (PDF Y TAMAÑO CARTA)
 ========================================= */
 
-@media screen {
-    /* Estilo del botón amarillo para que combine con el estilo industrial */
-    .btn-warning {
-        background-color: #b58c2a !important;
-        border-color: #a37a1e !important;
-        color: white !important;
-    }
-}
 
   
   
