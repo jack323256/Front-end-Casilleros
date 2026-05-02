@@ -78,13 +78,13 @@
     <!-- NUEVO: Contenedor de Siluetas Técnicas -->
       <div class="technical-silhouettes">
         <i class="bi bi-wrench silhouette item-1"></i>
-        <i class="bi bi-nut silhouette item-2"></i>
+        <i class="bi bi-gear-fill silhouette item-2"></i>
         <i class="bi bi-cpu silhouette item-3"></i>
-        <i class="bi bi-fuel-pump silhouette item-4"></i> <!-- Representando Petróleo -->
+        <i class="bi bi-droplet-fill silhouette item-4"></i> <!-- Para área de Petróleo -->
         <i class="bi bi-robot silhouette item-5"></i>
-        <i class="bi bi-lightning-charge silhouette item-6"></i>
-        <i class="bi bi-pip-fill silhouette item-7"></i> <!-- Representando tuberías -->
-        <i class="bi bi-precision-manufacturing silhouette item-8"></i>
+        <i class="bi bi-lightning-fill silhouette item-6"></i>
+        <i class="bi bi-tools silhouette item-7"></i>
+        <i class="bi bi-pci-card silhouette item-8"></i>
       </div>
       
 
@@ -793,15 +793,23 @@ footer {
   width: 100%;
   height: 100%;
   pointer-events: none; /* No interfiere con clics en la tabla */
-  z-index: -1;
+  z-index: 1;
   overflow: hidden;
 }
 
 .silhouette {
   position: absolute;
   color: #005b4f;
-  opacity: 0.035; /* Muy tenue, casi una marca de agua */
+  /* Subimos la opacidad de 0.035 a 0.07 para que sean perceptibles */
+  opacity: 0.07 !important; 
   font-size: 5rem;
+  /* Aseguramos que el navegador no los oculte por optimización */
+  display: block !important;
+  font-style: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Posiciones y rotaciones "al azar" para dar dinamismo */
@@ -819,7 +827,7 @@ footer {
   /* ... tus estilos anteriores ... */
   background-color: rgba(255, 255, 255, 0.9) !important; /* Un poco más de opacidad blanca */
   position: relative;
-  z-index: 2;
+  z-index: 5;
 }
 
 /* =========================================
