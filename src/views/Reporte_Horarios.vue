@@ -14,7 +14,7 @@
             <button class="btn btn-sm fw-bold" :class="vistaActiva === 'individual' ? 'btn-primary' : 'btn-outline-primary'" @click="vistaActiva = 'individual'">Individual</button>
             <button class="btn btn-sm fw-bold" :class="vistaActiva === 'grupo' ? 'btn-primary' : 'btn-outline-primary'" @click="vistaActiva = 'grupo'">Grupo</button>
             <button class="btn btn-sm fw-bold" :class="vistaActiva === 'maestro' ? 'btn-primary' : 'btn-outline-primary'" @click="vistaActiva = 'maestro'">Maestro</button>
-            <button class="btn btn-sm fw-bold" :class="vistaActiva === 'matriz' ? 'btn-primary' : 'btn-outline-primary'" @click="vistaActiva = 'matriz'">Matriz General</button>
+            <button class="btn btn-sm fw-bold" :class="vistaActiva === 'matriz' ? 'btn-primary' : 'btn-outline-primary'" @click="vistaActiva = 'matriz'">Matriz</button>
           </div>
         </div>
 
@@ -46,7 +46,7 @@
           <div class="d-flex gap-1 justify-content-end">
              <button v-if="vistaActiva !== 'matriz'" class="btn btn-sm btn-danger px-3 shadow-sm" title="Imprimir PDF" @click="imprimirPDF"><i class="bi bi-printer-fill"></i></button>
              
-             <!-- DESPLEGABLE DE DESCARGA -->
+             <!-- DESPLEGABLE DE DESCARGA JPG -->
              <div v-if="vistaActiva !== 'matriz'" class="btn-group shadow-sm">
                 <button type="button" class="btn btn-sm btn-warning dropdown-toggle fw-bold text-dark px-3" data-bs-toggle="dropdown">
                   <i class="bi bi-image-fill me-1"></i> JPG
@@ -64,7 +64,7 @@
       </div>
     </div>
 
-    <!-- CONTENEDOR CON SCROLL RESPONSIVO -->
+    <!-- CONTENEDOR DE SCROLL RESPONSIVO -->
     <div class="reporte-scroll-container">
         
         <!-- VISTA DE REPORTE INDIVIDUAL / GRUPO / MAESTRO -->
@@ -111,6 +111,7 @@
               <tbody>
                 <template v-for="row in matrizHorario" :key="row.bloque.inicio">
                   <tr v-if="row.bloque.tipo === 'receso'" class="fila-receso">
+                    <!-- Corrección: Se agregó la hora final del receso -->
                     <td class="fw-bold bg-hora text-dark celda-hora">{{ row.bloque.inicio }} a {{ row.bloque.fin }}</td>
                     <td colspan="5" class="bg-receso text-dark fw-bold etiqueta-receso" style="letter-spacing: 15px;">RECESO</td>
                   </tr>
@@ -417,12 +418,12 @@ const descargarImagen = async (formato) => {
       padding: '80px 100px',
       display: 'flex',
       backgroundColor: '#ffffff', // BLANCO PURO
-      boxShadow: 'none', // SEGURO CONTRA SOMBRAS
+      boxShadow: 'none', 
       transform: 'none'
     });
 
-    // Ajustes de proporciones de fuente para Redes (equilibrado)
-    const titulo = clon.querySelector('.titulo-principal'); if(titulo) titulo.style.fontSize = '4.2rem'; // REDUCIDO
+    // Ajustes de proporciones de fuente para Redes
+    const titulo = clon.querySelector('.titulo-principal'); if(titulo) titulo.style.fontSize = '4.2rem'; 
     const academia = clon.querySelector('.label-academia'); if(academia) academia.style.fontSize = '2.2rem';
     
     clon.querySelectorAll('.horario-table th').forEach(th => th.style.fontSize = '2.2rem');
@@ -431,8 +432,8 @@ const descargarImagen = async (formato) => {
     clon.querySelectorAll('.text-primary').forEach(div => div.style.fontSize = '1.4rem');
     clon.querySelectorAll('.fs-docente').forEach(div => div.style.fontSize = '1.4rem');
     
-    // Tamaño de materia ajustado para no verse exagerado
-    clon.querySelectorAll('.txt-materia-dinamico').forEach(div => div.style.fontSize = '1.4rem'); // REDUCIDO
+    // Tamaño de materia reducido para que no se sature en redes
+    clon.querySelectorAll('.txt-materia-dinamico').forEach(div => div.style.fontSize = '1.4rem'); 
     
     const receso = clon.querySelector('.etiqueta-receso'); if(receso) { receso.style.fontSize = '2.8rem'; receso.style.letterSpacing = '50px'; }
     const cuatri = clon.querySelector('.txt-cuatrimestre'); if(cuatri) cuatri.style.fontSize = '2.5rem';
@@ -494,6 +495,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* ====================================================
+   ESTILOS ORIGINALES RESTAURADOS (BORDE TABLA Y VISTA)
+   ==================================================== */
 .reporte-bg { background-color: #555; overflow-x: hidden;}
 .reporte-scroll-container { width: 100%; overflow-x: auto; padding: 10px; -webkit-overflow-scrolling: touch; }
 .hoja-horizontal { 
@@ -513,6 +517,7 @@ onMounted(async () => {
 .texto-dorado-industrial { color: #a37a1e; text-transform: uppercase; letter-spacing: 1px; }
 .table-container { flex: 1 1 auto; display: flex; flex-direction: column; margin: 4px 0; min-height: 0; position: relative; z-index: 5; }
 
+/* TABLA ORIGINAL INTACTA - NO SE TOCAN BORDES DE ROWSPAN AQUI */
 .horario-table { 
   height: 100%; width: 100%; border-collapse: collapse !important; 
   table-layout: fixed; border: 2px solid #000 !important;
@@ -520,9 +525,6 @@ onMounted(async () => {
   box-shadow: 0 0 15px rgba(0,0,0,0.05); backdrop-filter: blur(2px);
 }
 .horario-table th, .horario-table td { border: 0.75pt solid #000 !important; padding: 2px !important; vertical-align: middle; }
-
-/* REPARACIÓN DE LA DOBLE LÍNEA DEL ROWSPAN SIN ROMPER NADA */
-.horario-table td[rowspan] { border-bottom: 1px solid transparent !important; }
 
 .header-verde { background: #004d40 !important; color: white !important; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; }
 .bg-hora { background-color: #cfd8dc !important; font-size: 0.55rem; width: 75px; }
@@ -547,21 +549,33 @@ onMounted(async () => {
 .footer-industrial { flex-shrink: 0; margin-top: auto; }
 .footer-line { height: 3px; background: linear-gradient(90deg, #005b4f, #b58c2a, transparent); margin-bottom: 5px; }
 
-/* CONFIGURACIÓN RESTRINGIDA PARA UNA SOLA HOJA EN EL PDF */
+
+/* ====================================================
+   SOLUCIÓN PARA QUE SE IMPRIMA EN UNA SOLA HOJA AL 100%
+   ==================================================== */
 @media print {
   @page { size: letter landscape; margin: 0 !important; }
   
-  html, body { width: 27.94cm !important; height: 21.59cm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
-  .reporte-bg { padding: 0 !important; min-height: 0 !important; background: transparent !important; }
-  .no-print { display: none !important; }
-  .reporte-scroll-container { padding: 0 !important; overflow: hidden !important; width: 27.94cm !important; height: 21.59cm !important; }
+  /* Escondemos TODO lo que no sea el reporte (Incluyendo tu navbar externa) */
+  body * { visibility: hidden !important; }
   
-  .hoja-horizontal { 
-    position: relative !important; margin: 0 !important; left: 0 !important; top: 0 !important; 
-    width: 27.94cm !important; height: 21.59cm !important; box-shadow: none !important; 
-    page-break-after: avoid !important; page-break-inside: avoid !important; 
+  /* Aseguramos que solo nuestra hoja se vea */
+  #hoja-reporte, #hoja-reporte * { visibility: visible !important; }
+  
+  /* Forzamos la posición arriba y a la izquierda absoluta para ignorar márgenes externos */
+  #hoja-reporte {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 27.94cm !important;
+    height: 21.59cm !important;
+    margin: 0 !important;
+    background-color: white !important;
+    z-index: 999999 !important;
+    box-shadow: none !important;
   }
-  
+
+  .no-print { display: none !important; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 </style>
