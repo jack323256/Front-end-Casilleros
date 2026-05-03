@@ -110,10 +110,10 @@
               </thead>
               <tbody>
                 <template v-for="row in matrizHorario" :key="row.bloque.inicio">
-                  <tr v-if="row.bloque.tipo === 'receso'" class="fila-receso">
-                    <td class="fw-bold bg-hora text-dark">{{ row.bloque.inicio }}</td>
-                    <td colspan="5" class="bg-receso text-dark fw-bold" style="letter-spacing: 15px;">RECESO</td>
-                  </tr>
+                    <tr v-if="row.bloque.tipo === 'receso'" class="fila-receso">
+                      <td class="fw-bold bg-hora text-dark">{{ row.bloque.inicio }} a {{ row.bloque.fin }}</td>
+                      <td colspan="5" class="bg-receso text-dark fw-bold" style="letter-spacing: 15px;">RECESO</td>
+                    </tr>
                   <tr v-else>
                     <td class="fw-bold bg-hora text-dark">{{ row.bloque.inicio }} a {{ row.bloque.fin }}</td>
                     <template v-for="dia in diasList" :key="dia">
