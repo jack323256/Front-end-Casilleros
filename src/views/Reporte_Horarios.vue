@@ -411,7 +411,7 @@ const descargarImagen = async (formato) => {
       minWidth: '2040px',
       padding: '80px 100px',
       display: 'flex',
-      backgroundColor: 'white',
+      backgroundColor: '#ffffff',
       transform: 'none'
     });
 
