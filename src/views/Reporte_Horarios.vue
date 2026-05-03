@@ -44,46 +44,50 @@
 
         <div class="col-6 col-md-3 text-end order-2 order-md-4">
           <div class="d-flex gap-1 justify-content-end">
-             <button v-if="vistaActiva !== 'matriz'" class="btn btn-sm btn-danger px-3 shadow-sm" title="Imprimir PDF" @click="imprimirPDF"><i class="bi bi-printer-fill"></i></button>
-             <button v-if="vistaActiva !== 'matriz'" class="btn btn-sm btn-warning px-3 shadow-sm text-dark" title="Descargar Imagen" @click="descargarImagen"><i class="bi bi-image-fill"></i></button>
-             <button v-else class="btn btn-sm btn-success w-100 shadow-sm" @click="exportarExcel"><i class="bi bi-file-earmark-excel-fill"></i> Excel</button>
+             <button v-if="vistaActiva !== 'matriz'" class="btn btn-sm btn-danger px-3 shadow-sm" title="Imprimir PDF" @click="imprimirPDF">
+                <i class="bi bi-printer-fill"></i>
+             </button>
+             
+             <!-- DROPDOWN DE DESCARGA DE IMAGEN -->
+             <div v-if="vistaActiva !== 'matriz'" class="btn-group shadow-sm">
+                <button type="button" class="btn btn-sm btn-warning dropdown-toggle fw-bold text-dark px-3" data-bs-toggle="dropdown">
+                  <i class="bi bi-image-fill me-1"></i> JPG
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
+                  <li><a class="dropdown-item py-2" href="#" @click.prevent="descargarImagen('carta')"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Tamaño Carta</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item py-2" href="#" @click.prevent="descargarImagen('redes')"><i class="bi bi-instagram me-2 text-primary"></i>Formato Redes (2040x1913)</a></li>
+                </ul>
+             </div>
+
+             <button v-else class="btn btn-sm btn-success w-100 shadow-sm" @click="exportarExcel">
+                <i class="bi bi-file-earmark-excel-fill"></i> Excel
+             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- CONTENEDOR DE SCROLL PARA MÓVIL (Protege la escala de impresión) -->
+    <!-- CONTENEDOR DE SCROLL RESPONSIVO -->
     <div class="reporte-scroll-container">
-        
-        <!-- VISTA DE REPORTE INDIVIDUAL / GRUPO / MAESTRO -->
         <div v-if="vistaActiva !== 'matriz'" class="hoja-horizontal shadow">
-          <!-- FONDO INDUSTRIAL DINÁMICO -->
+          <!-- FONDO INDUSTRIAL -->
           <div class="industrial-bg-pattern"></div>
           <div class="watermark-gears"></div>
           <div class="technical-silhouettes">
             <i v-for="(icono, index) in siluetasAleatorias" 
-               :key="index"
-               :class="['bi', icono.clase, 'silhouette']"
-               :style="{
-                 top: icono.top + '%',
-                 left: icono.left + '%',
-                 transform: `rotate(${icono.rotacion}deg)`,
-                 fontSize: icono.size + 'rem',
-                 opacity: icono.opacidad
-               }">
+               :key="index" :class="['bi', icono.clase, 'silhouette']"
+               :style="{ top: icono.top + '%', left: icono.left + '%', transform: `rotate(${icono.rotacion}deg)`, fontSize: icono.size + 'rem', opacity: icono.opacidad }">
             </i>
           </div>
 
           <header class="d-flex justify-content-between align-items-center w-100 mb-2 header-industrial">
             <div class="d-flex flex-column align-items-start">
               <div class="barra-verde-industrial shadow-sm">
-                <h2 class="fw-bold fst-italic m-0 text-white" style="font-size: 1.2rem;">
-                  <i class="bi bi-gear-fill me-2"></i>Academia de Mantenimiento Industrial
-                </h2>
+                <h2 class="fw-bold fst-italic m-0 text-white" style="font-size: 1.1rem;">Academia de Mantenimiento Industrial</h2>
               </div>
               <h1 class="texto-dorado-industrial fw-bold fst-italic mt-1" style="margin-left: 1.5rem; font-size: 1.8rem;">
                 {{ vistaActiva === 'individual' ? espacioSeleccionado : vistaActiva === 'grupo' ? 'Grupo: ' + grupoSeleccionado : 'Docente: ' + maestroSeleccionado }}
-                <span v-if="vistaActiva === 'maestro'" class="badge bg-dark ms-3 fs-6">Carga: {{ horasTotalesMaestro }} hrs/sem</span>
               </h1>
             </div>
             <img src="/logos/logo-mantenimiento.png" alt="Logo" class="logo-top-large" @error="fallbackLogo">
@@ -106,22 +110,11 @@
                   <tr v-else>
                     <td class="fw-bold bg-hora text-dark">{{ row.bloque.inicio }} a {{ row.bloque.fin }}</td>
                     <template v-for="dia in diasList" :key="dia">
-                      <td v-if="row.celdas[dia].render" 
-                          :rowspan="row.celdas[dia].rowspan"
-                          class="celda-clase"
-                          :class="{ 'has-class': row.celdas[dia].clase }"
-                          @click="abrirDetalle(row.celdas[dia].clase)">
+                      <td v-if="row.celdas[dia].render" :rowspan="row.celdas[dia].rowspan" class="celda-clase" :class="{ 'has-class': row.celdas[dia].clase }" @click="abrirDetalle(row.celdas[dia].clase)">
                         <div v-if="row.celdas[dia].clase" class="clase-info">
-                          <!-- Solo mostrar el grupo si no estamos en vista 'Por Grupo' -->
-                          <div v-if="vistaActiva !== 'grupo'" class="texto-grupo-color" :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">
-                            {{ row.celdas[dia].clase.grupo }}
-                          </div>
-                          <div v-if="vistaActiva !== 'individual'" class="fw-bold text-primary" style="font-size: 0.65rem;">
-                            {{ row.celdas[dia].clase.laboratorio }}
-                          </div>
-                          <div v-if="vistaActiva !== 'maestro'" class="text-dark fs-docente lh-1 mt-1">
-                            {{ row.celdas[dia].clase.docente }}
-                          </div>
+                          <div v-if="vistaActiva !== 'grupo'" class="texto-grupo-color" :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">{{ row.celdas[dia].clase.grupo }}</div>
+                          <div v-if="vistaActiva !== 'individual'" class="fw-bold text-primary" style="font-size: 0.65rem;">{{ row.celdas[dia].clase.laboratorio }}</div>
+                          <div v-if="vistaActiva !== 'maestro'" class="text-dark fs-docente lh-1 mt-1">{{ row.celdas[dia].clase.docente }}</div>
                           <div class="fw-bold text-dark fs-materia text-uppercase lh-1 mt-1">{{ row.celdas[dia].clase.materia }}</div>
                         </div>
                       </td>
@@ -141,11 +134,9 @@
           </footer>
         </div>
 
-        <!-- VISTA DE MATRIZ GENERAL -->
         <div v-else class="matriz-general-container shadow bg-white p-4 mx-auto border border-2 border-dark">
             <div class="text-center mb-4">
                 <h2 class="fw-bold text-dark mb-0">MATRIZ DE ESPACIOS - {{ diaMatriz.toUpperCase() }}</h2>
-                <p class="fw-bold text-primary mb-0">MANTENIMIENTO INDUSTRIAL Y PETRÓLEO</p>
             </div>
             <div class="table-responsive">
                 <table class="table table-bordered border-dark text-center align-middle matriz-table">
@@ -163,9 +154,8 @@
                     </thead>
                     <tbody>
                         <tr v-for="bloque in bloquesHorarios" :key="bloque.inicio">
-                            <td class="fw-bold bg-light small">{{ bloque.inicio }}</td>
-                            <td v-for="espacio in [...laboratoriosList, ...aulasList]" :key="espacio" 
-                                class="celda-matriz" :class="{'bg-receso-matriz': bloque.tipo === 'receso'}">
+                            <td class="fw-bold bg-light small">{{ bloque.inicio }} - {{ bloque.fin }}</td>
+                            <td v-for="espacio in [...laboratoriosList, ...aulasList]" :key="espacio" class="celda-matriz">
                                 <template v-if="bloque.tipo === 'receso'">RECESO</template>
                                 <div v-else v-for="clase in buscarClaseMatriz(diaMatriz, espacio, bloque.inicio)" :key="clase.id">
                                     <div class="fw-bold" :style="{ color: getColorForGrupo(clase.grupo) }">{{ clase.grupo }}</div>
@@ -179,7 +169,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE DETALLES -->
+    <!-- MODAL -->
     <div v-if="modalVisible" class="modal fade show d-block no-print" tabindex="-1" style="background: rgba(0,0,0,0.6);" @click.self="modalVisible = false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg border-0 overflow-hidden">
@@ -190,21 +180,14 @@
                 <div class="modal-body p-4 text-center bg-white" v-if="claseSeleccionada">
                     <h4 class="fw-bold text-primary text-uppercase mb-1">{{ claseSeleccionada.materia }}</h4>
                     <div class="fw-bold fs-5 mb-3" :style="{ color: getColorForGrupo(claseSeleccionada.grupo) }">Grupo: {{ claseSeleccionada.grupo }}</div>
-                    
                     <div class="card bg-light border-0 text-start p-3 mb-0 shadow-sm">
                         <div class="d-flex align-items-center justify-content-center mb-3 pb-3 border-bottom text-center flex-column">
-                            <img :src="fotoDocente(claseSeleccionada.docente)" 
-                                 @error="$event.target.src = '/logos/default-docente.png'"
-                                 class="rounded-circle shadow bg-white mb-2" 
-                                 style="width: 120px; height: 120px; object-fit: cover; border: 4px solid white; display: block; margin: 0 auto;">
-                            <div>
-                                <div class="text-muted small fw-bold text-uppercase mb-1">Docente Asignado</div>
-                                <div class="fw-bold text-dark fs-5 lh-1">{{ claseSeleccionada.docente }}</div>
-                            </div>
+                            <img :src="fotoDocente(claseSeleccionada.docente)" @error="$event.target.src = '/logos/default-docente.png'" class="rounded-circle shadow bg-white mb-2" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid white;">
+                            <div class="fw-bold text-dark fs-5">{{ claseSeleccionada.docente }}</div>
                         </div>
                         <div class="ps-3">
-                            <p class="mb-2"><i class="bi bi-clock-fill text-warning me-2 fs-5 align-middle"></i> <strong>Horario:</strong> {{ claseSeleccionada.horaInicio }} a {{ claseSeleccionada.horaFin }}</p>
-                            <p class="mb-0"><i class="bi bi-door-open-fill text-success me-2 fs-5 align-middle"></i> <strong>Lugar:</strong> {{ claseSeleccionada.laboratorio }}</p>
+                            <p class="mb-2"><i class="bi bi-clock-fill text-warning me-2"></i> {{ claseSeleccionada.horaInicio }} a {{ claseSeleccionada.horaFin }}</p>
+                            <p class="mb-0"><i class="bi bi-door-open-fill text-success me-2"></i> {{ claseSeleccionada.laboratorio }}</p>
                         </div>
                     </div>
                 </div>
@@ -233,227 +216,128 @@ const claseSeleccionada = ref(null);
 const laboratoriosList = ['Lab de Automatización - Pesado I', 'Lab Eléctrica - Pesado I', 'Lab Electrónica - Pesado I', 'Lab de Ciencias Básicas - Pesado I', 'Lab Manufactura - Pesado II', 'Lab Metrología - Pesado II', 'Cómputo III - Docencia II'];
 const aulasList = ['AU 106 Docencia III', 'AU 107 Docencia III', 'AU 108 Docencia III', 'AU 109 Docencia III', 'AU 110 Docencia III', 'AU 111 Docencia III', 'AU 406 Docencia IV', 'AU 407 Docencia IV', 'AU 408 Docencia IV', 'AU Virtual'];
 const diasList = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+const bloquesHorarios = [{ inicio: '07:00', fin: '08:00', tipo: 'clase' }, { inicio: '08:00', fin: '09:00', tipo: 'clase' }, { inicio: '09:00', fin: '10:00', tipo: 'clase' }, { inicio: '10:00', fin: '11:00', tipo: 'clase' }, { inicio: '11:00', fin: '12:00', tipo: 'clase' }, { inicio: '12:00', fin: '12:30', tipo: 'receso' }, { inicio: '12:30', fin: '13:30', tipo: 'clase' }, { inicio: '13:30', fin: '14:30', tipo: 'clase' }, { inicio: '14:30', fin: '15:30', tipo: 'clase' }, { inicio: '15:30', fin: '16:30', tipo: 'clase' }, { inicio: '16:30', fin: '17:30', tipo: 'clase' }, { inicio: '17:30', fin: '18:30', tipo: 'clase' }, { inicio: '18:30', fin: '19:30', tipo: 'clase' }, { inicio: '19:30', fin: '20:30', tipo: 'clase' }];
 
-const bloquesHorarios = [
-  { inicio: '07:00', fin: '08:00', tipo: 'clase' }, { inicio: '08:00', fin: '09:00', tipo: 'clase' },
-  { inicio: '09:00', fin: '10:00', tipo: 'clase' }, { inicio: '10:00', fin: '11:00', tipo: 'clase' },
-  { inicio: '11:00', fin: '12:00', tipo: 'clase' }, { inicio: '12:00', fin: '12:30', tipo: 'receso' },
-  { inicio: '12:30', fin: '13:30', tipo: 'clase' }, { inicio: '13:30', fin: '14:30', tipo: 'clase' },
-  { inicio: '14:30', fin: '15:30', tipo: 'clase' }, { inicio: '15:30', fin: '16:30', tipo: 'clase' },
-  { inicio: '16:30', fin: '17:30', tipo: 'clase' }, { inicio: '17:30', fin: '18:30', tipo: 'clase' },
-  { inicio: '18:30', fin: '19:30', tipo: 'clase' }, { inicio: '19:30', fin: '20:30', tipo: 'clase' }
-];
-
-// --- LÓGICA DE SILUETAS ---
-const catalogoIconos = ['bi-wrench', 'bi-gear-fill', 'bi-cpu', 'bi-droplet-fill', 'bi-robot', 'bi-lightning-fill', 'bi-pip-fill', 'bi-tools', 'bi-pc-display', 'bi-moisture', 'bi-connector-fill', 'bi-shield-shaded'];
+// --- SILUETAS ---
 const siluetasAleatorias = ref([]);
 const generarSiluetas = () => {
-  const filas = 4; const columnas = 5; const nuevas = [];
-  const pX = 100 / columnas; const pY = 100 / filas;
-  for (let f = 0; f < filas; f++) {
-    for (let c = 0; c < columnas; c++) {
-      if (Math.random() > 0.3) {
-        nuevas.push({
-          clase: catalogoIconos[Math.floor(Math.random() * catalogoIconos.length)],
-          top: (f * pY) + (pY / 2) + ((Math.random() - 0.5) * (pY * 0.7)),
-          left: (c * pX) + (pX / 2) + ((Math.random() - 0.5) * (pX * 0.7)),
-          rotacion: Math.random() * 360,
-          size: 3 + Math.random() * 3,
-          opacidad: 0.04 + Math.random() * 0.03
-        });
-      }
-    }
+  const f = 4; const c = 5; const n = [];
+  const pX = 100/c; const pY = 100/f;
+  for(let i=0; i<f; i++) for(let j=0; j<c; j++) if(Math.random() > 0.3) {
+    n.push({ clase: ['bi-wrench', 'bi-gear-fill', 'bi-cpu', 'bi-droplet-fill', 'bi-robot', 'bi-lightning-fill', 'bi-pip-fill', 'bi-tools', 'bi-pc-display', 'bi-moisture', 'bi-connector-fill', 'bi-shield-shaded'][Math.floor(Math.random()*12)], top: (i*pY)+pY/2 + (Math.random()-0.5)*pY*0.7, left: (j*pX)+pX/2 + (Math.random()-0.5)*pX*0.7, rotacion: Math.random()*360, size: 3+Math.random()*3, opacidad: 0.04+Math.random()*0.03 });
   }
-  siluetasAleatorias.value = nuevas;
+  siluetasAleatorias.value = n;
 };
 
 // --- COMPUTED ---
 const gruposList = computed(() => [...new Set(horarios.value.map(h => h.grupo).filter(g => g))].sort());
 const maestrosList = computed(() => [...new Set(horarios.value.map(h => h.docente).filter(d => d))].sort());
-
 const horasTotalesMaestro = computed(() => {
-  const clases = horarios.value.filter(h => h.docente === maestroSeleccionado.value);
-  let totalMin = 0; const porDia = {};
-  clases.forEach(c => {
-    if (!c.horaInicio || !c.horaFin) return;
-    let [hI, mI] = c.horaInicio.split(':').map(Number);
-    let [hF, mF] = c.horaFin.split(':').map(Number);
-    if (hI < 6) hI += 12; if (hF < 6) hF += 12; if (hF < hI) hF += 12;
-    if (!porDia[c.dia]) porDia[c.dia] = [];
-    porDia[c.dia].push({ inicio: hI * 60 + mI, fin: hF * 60 + mF });
+  const cs = horarios.value.filter(h => h.docente === maestroSeleccionado.value);
+  let tm = 0; const pd = {}; cs.forEach(c => {
+    if(!c.horaInicio || !c.horaFin) return;
+    let [hI, mI] = c.horaInicio.split(':').map(Number); let [hF, mF] = c.horaFin.split(':').map(Number);
+    if(hI < 6) hI += 12; if(hF < 6) hF += 12; if(hF < hI) hF += 12;
+    if(!pd[c.dia]) pd[c.dia] = []; pd[c.dia].push({ inicio: hI*60+mI, fin: hF*60+mF });
   });
-  for (const d in porDia) {
-    let ints = porDia[d].sort((a, b) => a.inicio - b.inicio);
-    let fus = []; if (ints.length > 0) {
-      fus.push(ints[0]);
-      for (let i = 1; i < ints.length; i++) {
-        if (ints[i].inicio <= fus[fus.length - 1].fin) fus[fus.length - 1].fin = Math.max(fus[fus.length - 1].fin, ints[i].fin);
-        else fus.push(ints[i]);
-      }
-    }
-    fus.forEach(b => totalMin += (b.fin - b.inicio));
+  for(const d in pd) {
+    let ints = pd[d].sort((a,b)=>a.inicio-b.inicio); let fus = [];
+    if(ints.length>0){ fus.push(ints[0]); for(let i=1;i<ints.length;i++) if(ints[i].inicio<=fus[fus.length-1].fin) fus[fus.length-1].fin = Math.max(fus[fus.length-1].fin, ints[i].fin); else fus.push(ints[i]); }
+    fus.forEach(b => tm += b.fin-b.inicio);
   }
-  return (totalMin / 60).toFixed(1);
+  return (tm/60).toFixed(1);
 });
 
 const matrizHorario = computed(() => {
-  const matrix = [];
-  const skip = { 'Lunes': 0, 'Martes': 0, 'Miércoles': 0, 'Jueves': 0, 'Viernes': 0 };
-  for (let r = 0; r < bloquesHorarios.length; r++) {
-    const bloque = bloquesHorarios[r]; const row = { bloque, celdas: {} };
-    if (bloque.tipo !== 'receso') {
-      for (const d of diasList) {
-        if (skip[d] > 0) { row.celdas[d] = { render: false }; skip[d]--; continue; }
-        let c = horarios.value.find(h => h.dia === d && h.horaInicio === bloque.inicio && (
-          vistaActiva.value === 'individual' ? h.laboratorio === espacioSeleccionado.value :
-          vistaActiva.value === 'grupo' ? h.grupo === grupoSeleccionado.value : h.docente === maestroSeleccionado.value
-        ));
-        if (c) {
-          let rs = 1;
-          for (let nR = r + 1; nR < bloquesHorarios.length; nR++) {
-            if (bloquesHorarios[nR].tipo !== 'receso' && bloquesHorarios[nR].inicio < c.horaFin) rs++; else break;
-          }
-          row.celdas[d] = { render: true, rowspan: rs, clase: c }; skip[d] = rs - 1;
-        } else row.celdas[d] = { render: true, rowspan: 1, clase: null };
-      }
+  const m = []; const skip = {'Lunes':0,'Martes':0,'Miércoles':0,'Jueves':0,'Viernes':0};
+  for(let r=0; r<bloquesHorarios.length; r++) {
+    const b = bloquesHorarios[r]; const row = { bloque: b, celdas: {} };
+    if(b.tipo !== 'receso') for(const d of diasList) {
+      if(skip[d] > 0){ row.celdas[d] = {render:false}; skip[d]--; continue; }
+      let c = horarios.value.find(h => h.dia===d && h.horaInicio===b.inicio && (vistaActiva.value==='individual'?h.laboratorio===espacioSeleccionado.value:vistaActiva.value==='grupo'?h.grupo===grupoSeleccionado.value:h.docente===maestroSeleccionado.value));
+      if(c){ let rs=1; for(let n=r+1;n<bloquesHorarios.length;n++) if(bloquesHorarios[n].tipo!=='receso' && bloquesHorarios[n].inicio<c.horaFin) rs++; else break; row.celdas[d] = {render:true, rowspan:rs, clase:c}; skip[d]=rs-1; }
+      else row.celdas[d] = {render:true, rowspan:1, clase:null};
     }
-    matrix.push(row);
+    m.push(row);
   }
-  if (vistaActiva.value === 'matriz') return matrix;
+  if(vistaActiva.value==='matriz') return m;
   let start = -1; let end = -1;
-  for (let i = 0; i < matrix.length; i++) {
-    let ocupada = matrix[i].bloque.tipo === 'receso' ? true : diasList.some(d => (matrix[i].celdas[d].render && matrix[i].celdas[d].clase) || !matrix[i].celdas[d].render);
-    if (ocupada) { if (start === -1 && matrix[i].bloque.tipo !== 'receso') start = i; end = i; }
-  }
-  if (start === -1) return matrix.slice(0, 6);
-  while (start < matrix.length && matrix[start].bloque.tipo === 'receso') start++;
-  while (end >= 0 && matrix[end].bloque.tipo === 'receso') end--;
-  return matrix.slice(start, end + 1);
+  for(let i=0;i<m.length;i++) if(m[i].bloque.tipo==='receso' || diasList.some(d => (m[i].celdas[d]?.render && m[i].celdas[d]?.clase) || !m[i].celdas[d]?.render)){ if(start===-1 && m[i].bloque.tipo!=='receso') start=i; end=i; }
+  if(start===-1) return m.slice(0, 6);
+  while(start<m.length && m[start].bloque.tipo==='receso') start++;
+  while(end>=0 && m[end].bloque.tipo==='receso') end--;
+  return m.slice(start, end+1);
 });
 
 const cuatrimestreAutomatico = computed(() => {
-  const m = new Date().getMonth(); const y = new Date().getFullYear();
-  return `HORARIO ESCOLAR ${m <= 3 ? "ENERO-ABRIL" : m <= 7 ? "MAYO-AGOSTO" : "SEPTIEMBRE-DICIEMBRE"} ${y}`;
+  const mes = new Date().getMonth(); return `HORARIO ESCOLAR ${mes <= 3 ? "ENERO-ABRIL" : mes <= 7 ? "MAYO-AGOSTO" : "SEPTIEMBRE-DICIEMBRE"} ${new Date().getFullYear()}`;
 });
 
+const fotoDocente = (n) => n ? `/maestros_manto/${n.trim().replace(/\s+/g, '_')}${n.includes('Gallegos Amador Benito') ? '.jpg' : '.png'}` : null;
 const getColorForGrupo = (g) => {
   const p = ['#1565C0', '#00695C', '#7B1FA2', '#D84315', '#C62828'];
-  if (!g) return '#444';
-  let h = 0; for (let i = 0; i < g.length; i++) h = g.charCodeAt(i) + ((h << 5) - h);
-  return p[Math.abs(h) % p.length];
+  let h = 0; if(!g) return '#444'; for(let i=0;i<g.length;i++) h = g.charCodeAt(i)+((h<<5)-h); return p[Math.abs(h)%5];
 };
 
-const fotoDocente = (n) => {
-  if (!n) return null;
-  const proc = n.trim().replace(/\s+/g, '_');
-  return `/maestros_manto/${proc}${n.includes('Gallegos Amador Benito') ? '.jpg' : '.png'}`;
-};
-
-const buscarClaseMatriz = (d, e, i) => horarios.value.filter(c => c.dia === d && c.laboratorio === e && c.horaInicio <= i && c.horaFin > i);
-
-const loadHorarios = async () => { try { const res = await axios.get(API_URL); horarios.value = res.data; } catch (e) { console.error(e); } };
-const abrirDetalle = (c) => { if (c) { claseSeleccionada.value = c; modalVisible.value = true; } };
+const buscarClaseMatriz = (d,e,i) => horarios.value.filter(c => c.dia===d && c.laboratorio===e && c.horaInicio<=i && c.horaFin>i);
+const loadHorarios = async () => { try { const r = await axios.get(API_URL); horarios.value = r.data; } catch(e) { console.error(e); } };
+const abrirDetalle = (c) => { if(c) { claseSeleccionada.value = c; modalVisible.value = true; } };
 const imprimirPDF = () => window.print();
 const fallbackLogo = (e) => e.target.src = 'https://via.placeholder.com/150?text=Logo';
 
-const descargarImagen = async () => {
-  const el = document.querySelector('.hoja-horizontal');
-  if (!el) return;
+// --- DESCARGA JPG MEJORADA ---
+const descargarImagen = async (formato) => {
+  const el = document.querySelector('.hoja-horizontal'); if(!el) return;
+  const orig = { w: el.style.width, h: el.style.height, mw: el.style.minWidth, p: el.style.padding };
   try {
-    const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
-    const link = document.createElement('a');
-    link.download = `Horario_Industrial_${Date.now()}.jpg`;
-    link.href = canvas.toDataURL("image/jpeg", 0.95);
-    link.click();
-  } catch (e) { console.error(e); }
+    if(formato === 'redes') { el.style.width = '2040px'; el.style.height = '1913px'; el.style.minWidth = '2040px'; el.style.padding = '40px 60px'; }
+    const canvas = await html2canvas(el, { scale: formato === 'redes' ? 1 : 3, useCORS: true, backgroundColor: "#ffffff", onclone: (doc) => {
+      const cEl = doc.querySelector('.hoja-horizontal'); cEl.style.transform = 'scale(1)'; cEl.style.display = 'flex';
+      if(formato === 'redes') {
+        const t = cEl.querySelector('.texto-dorado-industrial'); if(t) t.style.fontSize = '3.5rem';
+        const b = cEl.querySelector('.barra-verde-industrial h2'); if(b) b.style.fontSize = '1.8rem';
+      }
+    }});
+    Object.assign(el.style, { width: orig.w, height: orig.h, minWidth: orig.mw, padding: orig.p });
+    const link = document.createElement('a'); link.download = `Horario_${formato}_${Date.now()}.jpg`; link.href = canvas.toDataURL("image/jpeg", 0.95); link.click();
+  } catch(e) { console.error(e); Object.assign(el.style, { width: orig.w, height: orig.h }); }
 };
 
 const exportarExcel = () => {
-  const header = ["HORA", ...laboratoriosList, ...aulasList];
-  const rows = bloquesHorarios.map(b => {
-    const r = [`${b.inicio} - ${b.fin}`];
-    [...laboratoriosList, ...aulasList].forEach(e => {
-      if (b.tipo === 'receso') r.push("RECESO");
-      else {
-        const cs = buscarClaseMatriz(diaMatriz.value, e, b.inicio);
-        r.push(cs.length > 0 ? `${cs[0].grupo} - ${cs[0].materia}` : "");
-      }
-    });
-    return r;
-  });
-  const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Matriz");
-  XLSX.writeFile(wb, `Matriz_${diaMatriz.value}.xlsx`);
+  const ws = XLSX.utils.aoa_to_sheet([["HORA", ...laboratoriosList, ...aulasList], ...bloquesHorarios.map(b => [`${b.inicio}-${b.fin}`, ...[...laboratoriosList, ...aulasList].map(e => b.tipo==='receso'?'RECESO':buscarClaseMatriz(diaMatriz.value, e, b.inicio).map(c=>`${c.grupo}-${c.materia}`).join(' | '))])]);
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Matriz"); XLSX.writeFile(wb, `Matriz_${diaMatriz.value}.xlsx`);
 };
 
 watch(vistaActiva, () => generarSiluetas());
-
 onMounted(async () => {
-  generarSiluetas();
-  await loadHorarios();
-  if (gruposList.value.length > 0) grupoSeleccionado.value = gruposList.value[0];
-  if (maestrosList.value.length > 0) maestroSeleccionado.value = maestrosList.value[0];
+  generarSiluetas(); await loadHorarios();
+  if(gruposList.value.length>0) grupoSeleccionado.value = gruposList.value[0];
+  if(maestrosList.value.length>0) maestroSeleccionado.value = maestrosList.value[0];
 });
 </script>
 
 <style scoped>
 .reporte-bg { background-color: #555; overflow-x: hidden; }
-
-/* Contenedor responsivo móvil */
-.reporte-scroll-container {
-  width: 100%; overflow-x: auto; padding: 10px;
-  -webkit-overflow-scrolling: touch;
-}
-
-.hoja-horizontal { 
-  background: white; width: 27.94cm; min-width: 27.94cm; height: 21.59cm; 
-  margin: 0 auto; box-sizing: border-box; padding: 5mm 8mm; 
-  display: flex; flex-direction: column; overflow: hidden; position: relative; z-index: 1;
-}
-
+.reporte-scroll-container { width: 100%; overflow-x: auto; padding: 10px; -webkit-overflow-scrolling: touch; }
+.hoja-horizontal { background: white; width: 27.94cm; min-width: 27.94cm; height: 21.59cm; margin: 0 auto; box-sizing: border-box; padding: 5mm 8mm; display: flex; flex-direction: column; position: relative; z-index: 1; overflow: hidden; }
 .header-industrial { flex-shrink: 0; z-index: 10; position: relative; }
 .logo-top-large { height: 90px; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1)); }
 .logo-bottom-large { height: 70px; }
-.barra-verde-industrial {
-  background: linear-gradient(135deg, #005b4f 0%, #003d35 100%);
-  padding: 8px 30px 8px 20px; border-left: 5px solid #b58c2a;
-  border-radius: 0 25px 25px 0; margin-left: -8mm; box-shadow: 3px 3px 6px rgba(0,0,0,0.2);
-}
+.barra-verde-industrial { background: linear-gradient(135deg, #005b4f 0%, #003d35 100%); padding: 8px 30px; border-left: 5px solid #b58c2a; border-radius: 0 25px 25px 0; margin-left: -8mm; box-shadow: 3px 3px 6px rgba(0,0,0,0.2); }
 .texto-dorado-industrial { color: #a37a1e; text-transform: uppercase; letter-spacing: 1px; }
-
 .table-container { flex: 1 1 auto; display: flex; flex-direction: column; margin: 4px 0; min-height: 0; position: relative; z-index: 5; }
-.horario-table { 
-  height: 100%; width: 100%; border-collapse: collapse !important; 
-  table-layout: fixed; border: 2px solid #000 !important;
-  background-color: rgba(255, 255, 255, 0.82) !important;
-  box-shadow: 0 0 15px rgba(0,0,0,0.05); backdrop-filter: blur(2px);
-}
+.horario-table { height: 100%; width: 100%; border-collapse: collapse !important; border: 2px solid #000 !important; background-color: rgba(255, 255, 255, 0.82) !important; backdrop-filter: blur(2px); }
 .horario-table th, .horario-table td { border: 0.75pt solid #000 !important; padding: 2px !important; vertical-align: middle; }
-.header-verde { background: #004d40 !important; color: white !important; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; }
+.header-verde { background: #004d40 !important; color: white !important; font-weight: 800; font-size: 0.8rem; }
 .bg-hora { background-color: #cfd8dc !important; font-size: 0.55rem; width: 75px; }
-.bg-receso { 
-  background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #e8e8e8 10px, #e8e8e8 20px) !important; 
-  color: #666 !important; font-size: 0.75rem; 
-}
-
+.bg-receso { background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #e8e8e8 10px, #e8e8e8 20px) !important; color: #666 !important; font-size: 0.75rem; }
 .celda-clase { position: relative; cursor: pointer; }
 .clase-info { text-align: center; line-height: 0.95; }
 .fs-docente, .fs-materia { font-size: 0.55rem; }
-
-.industrial-bg-pattern {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background-image: linear-gradient(rgba(0, 91, 79, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 91, 79, 0.03) 1px, transparent 1px);
-  background-size: 20px 20px; z-index: 0;
-}
-.watermark-gears {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: 500px; height: 500px; background-image: url('https://cdn-icons-png.flaticon.com/512/3524/3524659.png');
-  background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.04; z-index: 0;
-}
+.industrial-bg-pattern { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(0, 91, 79, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 91, 79, 0.03) 1px, transparent 1px); background-size: 20px 20px; z-index: 0; }
+.watermark-gears { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; background-image: url('https://cdn-icons-png.flaticon.com/512/3524/3524659.png'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.04; z-index: 0; }
 .technical-silhouettes { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; }
 .silhouette { position: absolute; color: #005b4f; filter: grayscale(100%); }
-
-.footer-industrial { flex-shrink: 0; margin-top: auto; }
 .footer-line { height: 3px; background: linear-gradient(90deg, #005b4f, #b58c2a, transparent); margin-bottom: 5px; }
 
 @media print {
