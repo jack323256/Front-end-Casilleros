@@ -124,7 +124,6 @@
                           @click="abrirDetalle(row.celdas[dia].clase)">
                         
                         <div v-if="row.celdas[dia].clase" class="clase-info">
-                          <!-- ESTRUCTURA ORIGINAL RESTAURADA -->
                           <div v-if="vistaActiva !== 'grupo'" class="texto-grupo-color" :style="{ color: getColorForGrupo(row.celdas[dia].clase.grupo) }">
                             {{ row.celdas[dia].clase.grupo }}
                           </div>
@@ -154,7 +153,7 @@
           </footer>
         </div>
 
-        <!-- VISTA DE MATRIZ GENERAL ORIGINAL RESTAURADA -->
+        <!-- VISTA DE MATRIZ GENERAL -->
         <div v-else class="matriz-general-container shadow bg-white p-4 mx-auto border border-2 border-dark">
             <div class="text-center mb-4">
                 <h2 class="fw-bold text-dark mb-0">MATRIZ DE ESPACIOS - {{ diaMatriz.toUpperCase() }}</h2>
@@ -279,7 +278,6 @@ const bloquesHorarios = [
   { inicio: '18:30', fin: '19:30', tipo: 'clase' }, { inicio: '19:30', fin: '20:30', tipo: 'clase' }
 ];
 
-// --- LÓGICA DE SILUETAS ORIGINAL (RESTAURADA AL 100%) ---
 const catalogoIconos = ['bi-wrench', 'bi-gear-fill', 'bi-cpu', 'bi-droplet-fill', 'bi-robot', 'bi-lightning-fill', 'bi-pip-fill', 'bi-tools', 'bi-pc-display', 'bi-moisture', 'bi-connector-fill', 'bi-shield-shaded'];
 const siluetasAleatorias = ref([]);
 
@@ -305,7 +303,6 @@ const generarSiluetas = () => {
   siluetasAleatorias.value = nuevas;
 };
 
-// --- COMPUTED ---
 const gruposList = computed(() => [...new Set(horarios.value.map(h => h.grupo).filter(g => g))].sort());
 const maestrosList = computed(() => [...new Set(horarios.value.map(h => h.docente).filter(d => d))].sort());
 
@@ -396,21 +393,18 @@ const abrirDetalle = (c) => { if (c) { claseSeleccionada.value = c; modalVisible
 const imprimirPDF = () => window.print();
 const fallbackLogo = (e) => e.target.src = 'https://via.placeholder.com/150?text=Logo';
 
-// --- LÓGICA DE CAPTURA DUAL (CARTA / REDES) ---
+// --- LOGICA DE DESCARGA ---
 const descargarImagen = async (formato) => {
   const el = document.getElementById('hoja-reporte');
   if (!el) return;
 
   if (formato === 'redes') {
-    // Clonamos para no afectar tu vista en pantalla
     const containerRedes = document.createElement('div');
     containerRedes.style.position = 'absolute';
     containerRedes.style.left = '-9999px';
     document.body.appendChild(containerRedes);
 
     const clon = el.cloneNode(true);
-    
-    // Aplicamos dimensiones estéticas para 2040px
     Object.assign(clon.style, {
       width: '2040px',
       height: '1913px',
@@ -421,7 +415,6 @@ const descargarImagen = async (formato) => {
       transform: 'none'
     });
 
-    // Escalamos las clases base originales para que se vean grandes y claras
     const titulo = clon.querySelector('.texto-dorado-industrial'); if(titulo) titulo.style.fontSize = '5.5rem';
     const academia = clon.querySelector('h2.text-white'); if(academia) academia.style.fontSize = '2.5rem';
     clon.querySelectorAll('.horario-table th').forEach(th => th.style.fontSize = '2.2rem');
@@ -429,7 +422,10 @@ const descargarImagen = async (formato) => {
     clon.querySelectorAll('.texto-grupo-color').forEach(div => div.style.fontSize = '1.8rem');
     clon.querySelectorAll('.text-primary').forEach(div => div.style.fontSize = '1.4rem');
     clon.querySelectorAll('.fs-docente').forEach(div => div.style.fontSize = '1.4rem');
-    clon.querySelectorAll('.fs-materia').forEach(div => div.style.fontSize = '1.8rem');
+    
+    // REDUCCIÓN DEL TAMAÑO DE LA MATERIA PARA REDES
+    clon.querySelectorAll('.fs-materia').forEach(div => div.style.fontSize = '1.3rem');
+    
     const receso = clon.querySelector('.bg-receso'); if(receso) { receso.style.fontSize = '2.8rem'; receso.style.letterSpacing = '50px'; }
     const cuatri = clon.querySelector('h3.texto-verde-oscuro'); if(cuatri) cuatri.style.fontSize = '2.5rem';
     const lTop = clon.querySelector('.logo-top-large'); if(lTop) lTop.style.height = '180px';
@@ -437,7 +433,6 @@ const descargarImagen = async (formato) => {
 
     containerRedes.appendChild(clon);
 
-    // Capturamos el clon
     const canvas = await html2canvas(clon, { scale: 1, useCORS: true, backgroundColor: "#ffffff" });
     imgPreviewSrc.value = canvas.toDataURL("image/jpeg", 0.95);
     previewRedesVisible.value = true;
@@ -445,7 +440,7 @@ const descargarImagen = async (formato) => {
     document.body.removeChild(containerRedes);
 
   } else {
-    // CAPTURA NORMAL CARTA (Usa la vista de pantalla sin alterar nada)
+    // CAPTURA NORMAL
     const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
     const link = document.createElement('a');
     link.download = `Horario_Carta_${Date.now()}.jpg`;
@@ -491,10 +486,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* ESTILOS EXACTOS DE TU BASE ORIGINAL (Sin alteraciones para no romper Carta ni Matriz) */
+/* ESTILOS EXACTOS Y ORIGINALES */
 .reporte-bg { background-color: #555; }
 
-/* Wrapper responsivo para que en celular haya scroll horizontal sin achicar la hoja */
 .reporte-scroll-container { width: 100%; overflow-x: auto; padding: 10px; -webkit-overflow-scrolling: touch; }
 
 .hoja-horizontal { 
@@ -514,7 +508,7 @@ onMounted(async () => {
 .texto-dorado-industrial { color: #a37a1e; text-transform: uppercase; letter-spacing: 1px; }
 .table-container { flex: 1 1 auto; display: flex; flex-direction: column; margin: 4px 0; min-height: 0; position: relative; z-index: 5; }
 
-/* Se mantuvo tu 'border-collapse: collapse !important;' original */
+/* TABLA ORIGINAL SIN MODIFICACIONES DE BORDES */
 .horario-table { 
   height: 100%; width: 100%; border-collapse: collapse !important; 
   table-layout: fixed; border: 2px solid #000 !important;
@@ -522,9 +516,6 @@ onMounted(async () => {
   box-shadow: 0 0 15px rgba(0,0,0,0.05); backdrop-filter: blur(2px);
 }
 .horario-table th, .horario-table td { border: 0.75pt solid #000 !important; padding: 2px !important; vertical-align: middle; }
-
-/* Para evitar la doble línea visible en celdas unidas por html2canvas */
-.horario-table td[rowspan] { border-bottom: 1px solid transparent !important; }
 
 .header-verde { background: #004d40 !important; color: white !important; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; }
 .bg-hora { background-color: #cfd8dc !important; font-size: 0.55rem; width: 75px; }
@@ -552,12 +543,46 @@ onMounted(async () => {
 .footer-industrial { flex-shrink: 0; margin-top: auto; }
 .footer-line { height: 3px; background: linear-gradient(90deg, #005b4f, #b58c2a, transparent); margin-bottom: 5px; }
 
-/* Excepciones de Impresión / Generación */
+/* CONFIGURACIÓN DE IMPRESIÓN CORREGIDA PARA 1 SOLA HOJA */
 @media print {
   @page { size: letter landscape; margin: 0 !important; }
+  
+  /* Bloquear dimensiones para evitar la segunda hoja en blanco */
+  html, body { 
+    width: 27.94cm !important; 
+    height: 21.59cm !important; 
+    margin: 0 !important; 
+    padding: 0 !important; 
+    overflow: hidden !important; 
+  }
+  
+  .reporte-bg { 
+    padding: 0 !important; 
+    min-height: 0 !important; 
+    background: transparent !important; 
+  }
+  
   .no-print { display: none !important; }
-  .reporte-scroll-container { padding: 0 !important; overflow: visible !important; }
-  .hoja-horizontal { position: absolute !important; left: 0 !important; top: 0 !important; width: 27.8cm !important; height: 21.4cm !important; z-index: 9999 !important; margin: 0 !important; }
+  
+  .reporte-scroll-container { 
+    padding: 0 !important; 
+    overflow: hidden !important; 
+    width: 27.94cm !important; 
+    height: 21.59cm !important; 
+  }
+  
+  .hoja-horizontal { 
+    position: relative !important; 
+    margin: 0 !important; 
+    left: 0 !important; 
+    top: 0 !important; 
+    width: 27.94cm !important; 
+    height: 21.59cm !important; 
+    box-shadow: none !important; 
+    page-break-after: avoid !important; 
+    page-break-inside: avoid !important; 
+  }
+  
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 </style>
