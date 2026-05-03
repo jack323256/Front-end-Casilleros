@@ -1,6 +1,6 @@
 <template>
   <div class="reporte-bg min-vh-100 pb-4">
-    <!-- BARRA DE CONTROL SUPERIOR (RESPONSIVA Y NO IMPRIMIBLE) -->
+    <!-- BARRA DE CONTROL SUPERIOR -->
     <div class="container-fluid py-2 bg-white shadow-sm mb-3 no-print border-bottom">
       <div class="row g-2 align-items-center px-lg-4">
         <div class="col-6 col-md-2">
@@ -54,7 +54,7 @@
                 <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
                   <li><a class="dropdown-item py-2" href="#" @click.prevent="descargarImagen('carta')"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Tamaño Carta</a></li>
                   <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item py-2" href="#" @click.prevent="descargarImagen('redes')"><i class="bi bi-instagram me-2 text-primary"></i>Formato Redes (Vista Previa)</a></li>
+                  <li><a class="dropdown-item py-2" href="#" @click.prevent="descargarImagen('redes')"><i class="bi bi-instagram me-2 text-primary"></i>Formato Redes (Digital)</a></li>
                 </ul>
              </div>
 
@@ -88,11 +88,11 @@
           <header class="d-flex justify-content-between align-items-center w-100 mb-2 header-industrial">
             <div class="d-flex flex-column align-items-start">
               <div class="barra-verde-industrial shadow-sm">
-                <h2 class="fw-bold fst-italic m-0 text-white" style="font-size: 1.2rem;">
+                <h2 class="fw-bold fst-italic m-0 text-white label-academia" style="font-size: 1.2rem;">
                   <i class="bi bi-gear-fill me-2"></i>Academia de Mantenimiento Industrial
                 </h2>
               </div>
-              <h1 class="texto-dorado-industrial fw-bold fst-italic mt-1" style="margin-left: 1.5rem; font-size: 1.8rem;">
+              <h1 class="texto-dorado-industrial fw-bold fst-italic mt-1 titulo-principal" style="margin-left: 1.5rem; font-size: 1.8rem;">
                 {{ vistaActiva === 'individual' ? espacioSeleccionado : vistaActiva === 'grupo' ? 'Grupo: ' + grupoSeleccionado : 'Docente: ' + maestroSeleccionado }}
                 <span v-if="vistaActiva === 'maestro'" class="badge bg-dark ms-3 fs-6">Carga: {{ horasTotalesMaestro }} hrs/sem</span>
               </h1>
@@ -110,12 +110,12 @@
               </thead>
               <tbody>
                 <template v-for="row in matrizHorario" :key="row.bloque.inicio">
-                    <tr v-if="row.bloque.tipo === 'receso'" class="fila-receso">
-                      <td class="fw-bold bg-hora text-dark">{{ row.bloque.inicio }} a {{ row.bloque.fin }}</td>
-                      <td colspan="5" class="bg-receso text-dark fw-bold" style="letter-spacing: 15px;">RECESO</td>
-                    </tr>
+                  <tr v-if="row.bloque.tipo === 'receso'" class="fila-receso">
+                    <td class="fw-bold bg-hora text-dark celda-hora">{{ row.bloque.inicio }} a {{ row.bloque.fin }}</td>
+                    <td colspan="5" class="bg-receso text-dark fw-bold etiqueta-receso" style="letter-spacing: 15px;">RECESO</td>
+                  </tr>
                   <tr v-else>
-                    <td class="fw-bold bg-hora text-dark">{{ row.bloque.inicio }} a {{ row.bloque.fin }}</td>
+                    <td class="fw-bold bg-hora text-dark celda-hora">{{ row.bloque.inicio }} a {{ row.bloque.fin }}</td>
                     <template v-for="dia in diasList" :key="dia">
                       <td v-if="row.celdas[dia].render" 
                           :rowspan="row.celdas[dia].rowspan"
@@ -133,7 +133,7 @@
                           <div v-if="vistaActiva !== 'maestro'" class="text-dark fs-docente lh-1 mt-1">
                             {{ row.celdas[dia].clase.docente }}
                           </div>
-                          <div class="fw-bold text-dark fs-materia text-uppercase lh-1 mt-1">{{ row.celdas[dia].clase.materia }}</div>
+                          <div class="fw-bold text-dark fs-materia txt-materia-dinamico text-uppercase lh-1 mt-1">{{ row.celdas[dia].clase.materia }}</div>
                         </div>
 
                       </td>
@@ -147,7 +147,7 @@
           <footer class="footer-industrial mt-1 pt-1">
             <div class="footer-line"></div>
             <div class="d-flex justify-content-between align-items-end w-100">
-               <h3 class="fw-bold fst-italic texto-verde-oscuro m-0" style="font-size: 1.1rem;">{{ cuatrimestreAutomatico }}</h3>
+               <h3 class="fw-bold fst-italic texto-verde-oscuro m-0 txt-cuatrimestre" style="font-size: 1.1rem;">{{ cuatrimestreAutomatico }}</h3>
                <img src="/logos/somos_mantenimeinto.png" alt="UTXJ" class="logo-bottom-large" @error="fallbackLogo">
             </div>
           </footer>
@@ -393,41 +393,49 @@ const abrirDetalle = (c) => { if (c) { claseSeleccionada.value = c; modalVisible
 const imprimirPDF = () => window.print();
 const fallbackLogo = (e) => e.target.src = 'https://via.placeholder.com/150?text=Logo';
 
-// --- LOGICA DE DESCARGA ---
+// --- LOGICA DE DESCARGA DUAL (LIMPIA Y AJUSTADA) ---
 const descargarImagen = async (formato) => {
   const el = document.getElementById('hoja-reporte');
   if (!el) return;
 
   if (formato === 'redes') {
+    // Clonamos para formato digital
     const containerRedes = document.createElement('div');
     containerRedes.style.position = 'absolute';
     containerRedes.style.left = '-9999px';
     document.body.appendChild(containerRedes);
 
     const clon = el.cloneNode(true);
+    
+    // ELIMINAMOS LA SOMBRA GRIS DEL CONTENEDOR PARA BLANCO PURO
+    clon.classList.remove('shadow');
+
     Object.assign(clon.style, {
       width: '2040px',
       height: '1913px',
       minWidth: '2040px',
       padding: '80px 100px',
       display: 'flex',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#ffffff', // BLANCO PURO
+      boxShadow: 'none', // SEGURO CONTRA SOMBRAS
       transform: 'none'
     });
 
-    const titulo = clon.querySelector('.texto-dorado-industrial'); if(titulo) titulo.style.fontSize = '5.5rem';
-    const academia = clon.querySelector('h2.text-white'); if(academia) academia.style.fontSize = '2.5rem';
+    // Ajustes de proporciones de fuente para Redes (equilibrado)
+    const titulo = clon.querySelector('.titulo-principal'); if(titulo) titulo.style.fontSize = '4.2rem'; // REDUCIDO
+    const academia = clon.querySelector('.label-academia'); if(academia) academia.style.fontSize = '2.2rem';
+    
     clon.querySelectorAll('.horario-table th').forEach(th => th.style.fontSize = '2.2rem');
-    clon.querySelectorAll('.bg-hora').forEach(ch => { ch.style.fontSize = '1.8rem'; ch.style.width = '220px'; });
+    clon.querySelectorAll('.celda-hora').forEach(ch => { ch.style.fontSize = '1.8rem'; ch.style.width = '220px'; });
     clon.querySelectorAll('.texto-grupo-color').forEach(div => div.style.fontSize = '1.8rem');
     clon.querySelectorAll('.text-primary').forEach(div => div.style.fontSize = '1.4rem');
     clon.querySelectorAll('.fs-docente').forEach(div => div.style.fontSize = '1.4rem');
     
-    // REDUCCIÓN DEL TAMAÑO DE LA MATERIA PARA REDES
-    clon.querySelectorAll('.fs-materia').forEach(div => div.style.fontSize = '1.3rem');
+    // Tamaño de materia ajustado para no verse exagerado
+    clon.querySelectorAll('.txt-materia-dinamico').forEach(div => div.style.fontSize = '1.4rem'); // REDUCIDO
     
-    const receso = clon.querySelector('.bg-receso'); if(receso) { receso.style.fontSize = '2.8rem'; receso.style.letterSpacing = '50px'; }
-    const cuatri = clon.querySelector('h3.texto-verde-oscuro'); if(cuatri) cuatri.style.fontSize = '2.5rem';
+    const receso = clon.querySelector('.etiqueta-receso'); if(receso) { receso.style.fontSize = '2.8rem'; receso.style.letterSpacing = '50px'; }
+    const cuatri = clon.querySelector('.txt-cuatrimestre'); if(cuatri) cuatri.style.fontSize = '2.5rem';
     const lTop = clon.querySelector('.logo-top-large'); if(lTop) lTop.style.height = '180px';
     const lBot = clon.querySelector('.logo-bottom-large'); if(lBot) lBot.style.height = '150px';
 
@@ -440,7 +448,7 @@ const descargarImagen = async (formato) => {
     document.body.removeChild(containerRedes);
 
   } else {
-    // CAPTURA NORMAL
+    // CAPTURA TAMAÑO CARTA NORMAL
     const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
     const link = document.createElement('a');
     link.download = `Horario_Carta_${Date.now()}.jpg`;
@@ -486,11 +494,8 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* ESTILOS EXACTOS Y ORIGINALES */
-.reporte-bg { background-color: #555; }
-
+.reporte-bg { background-color: #555; overflow-x: hidden;}
 .reporte-scroll-container { width: 100%; overflow-x: auto; padding: 10px; -webkit-overflow-scrolling: touch; }
-
 .hoja-horizontal { 
   background: white; width: 27.94cm; min-width: 27.94cm; height: 21.59cm; margin: 0 auto; 
   box-sizing: border-box; padding: 5mm 8mm; display: flex; 
@@ -508,7 +513,6 @@ onMounted(async () => {
 .texto-dorado-industrial { color: #a37a1e; text-transform: uppercase; letter-spacing: 1px; }
 .table-container { flex: 1 1 auto; display: flex; flex-direction: column; margin: 4px 0; min-height: 0; position: relative; z-index: 5; }
 
-/* TABLA ORIGINAL SIN MODIFICACIONES DE BORDES */
 .horario-table { 
   height: 100%; width: 100%; border-collapse: collapse !important; 
   table-layout: fixed; border: 2px solid #000 !important;
@@ -517,12 +521,12 @@ onMounted(async () => {
 }
 .horario-table th, .horario-table td { border: 0.75pt solid #000 !important; padding: 2px !important; vertical-align: middle; }
 
+/* REPARACIÓN DE LA DOBLE LÍNEA DEL ROWSPAN SIN ROMPER NADA */
+.horario-table td[rowspan] { border-bottom: 1px solid transparent !important; }
+
 .header-verde { background: #004d40 !important; color: white !important; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; }
 .bg-hora { background-color: #cfd8dc !important; font-size: 0.55rem; width: 75px; }
-.bg-receso { 
-  background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #e8e8e8 10px, #e8e8e8 20px) !important; 
-  color: #666 !important; font-size: 0.75rem; 
-}
+.bg-receso { background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #e8e8e8 10px, #e8e8e8 20px) !important; color: #666 !important; font-size: 0.75rem; }
 .celda-clase { position: relative; cursor: pointer; }
 .clase-info { text-align: center; line-height: 0.95; }
 .fs-docente, .fs-materia { font-size: 0.55rem; }
@@ -543,44 +547,19 @@ onMounted(async () => {
 .footer-industrial { flex-shrink: 0; margin-top: auto; }
 .footer-line { height: 3px; background: linear-gradient(90deg, #005b4f, #b58c2a, transparent); margin-bottom: 5px; }
 
-/* CONFIGURACIÓN DE IMPRESIÓN CORREGIDA PARA 1 SOLA HOJA */
+/* CONFIGURACIÓN RESTRINGIDA PARA UNA SOLA HOJA EN EL PDF */
 @media print {
   @page { size: letter landscape; margin: 0 !important; }
   
-  /* Bloquear dimensiones para evitar la segunda hoja en blanco */
-  html, body { 
-    width: 27.94cm !important; 
-    height: 21.59cm !important; 
-    margin: 0 !important; 
-    padding: 0 !important; 
-    overflow: hidden !important; 
-  }
-  
-  .reporte-bg { 
-    padding: 0 !important; 
-    min-height: 0 !important; 
-    background: transparent !important; 
-  }
-  
+  html, body { width: 27.94cm !important; height: 21.59cm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+  .reporte-bg { padding: 0 !important; min-height: 0 !important; background: transparent !important; }
   .no-print { display: none !important; }
-  
-  .reporte-scroll-container { 
-    padding: 0 !important; 
-    overflow: hidden !important; 
-    width: 27.94cm !important; 
-    height: 21.59cm !important; 
-  }
+  .reporte-scroll-container { padding: 0 !important; overflow: hidden !important; width: 27.94cm !important; height: 21.59cm !important; }
   
   .hoja-horizontal { 
-    position: relative !important; 
-    margin: 0 !important; 
-    left: 0 !important; 
-    top: 0 !important; 
-    width: 27.94cm !important; 
-    height: 21.59cm !important; 
-    box-shadow: none !important; 
-    page-break-after: avoid !important; 
-    page-break-inside: avoid !important; 
+    position: relative !important; margin: 0 !important; left: 0 !important; top: 0 !important; 
+    width: 27.94cm !important; height: 21.59cm !important; box-shadow: none !important; 
+    page-break-after: avoid !important; page-break-inside: avoid !important; 
   }
   
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
