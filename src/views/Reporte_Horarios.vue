@@ -48,7 +48,7 @@
                 <i class="bi bi-printer-fill"></i>
              </button>
              
-             <!-- DROPDOWN DE DESCARGA DE IMAGEN -->
+             <!-- DROPDOWN DE DESCARGA JPG -->
              <div v-if="vistaActiva !== 'matriz'" class="btn-group shadow-sm">
                 <button type="button" class="btn btn-sm btn-warning dropdown-toggle fw-bold text-dark px-3" data-bs-toggle="dropdown">
                   <i class="bi bi-image-fill me-1"></i> JPG
@@ -56,7 +56,7 @@
                 <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
                   <li><a class="dropdown-item py-2" href="#" @click.prevent="descargarImagen('carta')"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Tamaño Carta</a></li>
                   <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item py-2" href="#" @click.prevent="descargarImagen('redes')"><i class="bi bi-instagram me-2 text-primary"></i>Formato Redes (2040x1913)</a></li>
+                  <li><a class="dropdown-item py-2" href="#" @click.prevent="descargarImagen('redes')"><i class="bi bi-instagram me-2 text-primary"></i>Formato Redes (Vista Previa)</a></li>
                 </ul>
              </div>
 
@@ -134,6 +134,7 @@
           </footer>
         </div>
 
+        <!-- VISTA MATRIZ -->
         <div v-else class="matriz-general-container shadow bg-white p-4 mx-auto border border-2 border-dark">
             <div class="text-center mb-4">
                 <h2 class="fw-bold text-dark mb-0">MATRIZ DE ESPACIOS - {{ diaMatriz.toUpperCase() }}</h2>
@@ -154,7 +155,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="bloque in bloquesHorarios" :key="bloque.inicio">
-                            <td class="fw-bold bg-light small">{{ bloque.inicio }} - {{ bloque.fin }}</td>
+                            <td class="fw-bold bg-light small">{{ bloque.inicio }}</td>
                             <td v-for="espacio in [...laboratoriosList, ...aulasList]" :key="espacio" class="celda-matriz">
                                 <template v-if="bloque.tipo === 'receso'">RECESO</template>
                                 <div v-else v-for="clase in buscarClaseMatriz(diaMatriz, espacio, bloque.inicio)" :key="clase.id">
@@ -169,7 +170,25 @@
         </div>
     </div>
 
-    <!-- MODAL -->
+    <!-- MODAL VISTA PREVIA REDES -->
+    <div v-if="previewRedesVisible" class="modal fade show d-block no-print" style="background: rgba(0,0,0,0.85); z-index: 10000;">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-dark border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title text-white fw-bold">Vista Previa: 2040 x 1913 px</h5>
+                    <button type="button" class="btn-close btn-close-white" @click="previewRedesVisible = false"></button>
+                </div>
+                <div class="modal-body text-center overflow-auto" style="max-height: 75vh;">
+                    <img :src="imgPreviewSrc" class="img-fluid shadow-lg border border-secondary">
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button class="btn btn-lg btn-warning fw-bold px-5" @click="confirmarDescargaRedes">Confirmar y Descargar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLES -->
     <div v-if="modalVisible" class="modal fade show d-block no-print" tabindex="-1" style="background: rgba(0,0,0,0.6);" @click.self="modalVisible = false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg border-0 overflow-hidden">
@@ -212,6 +231,8 @@ const maestroSeleccionado = ref('');
 const espacioSeleccionado = ref('Lab de Automatización - Pesado I');
 const modalVisible = ref(false);
 const claseSeleccionada = ref(null);
+const previewRedesVisible = ref(false);
+const imgPreviewSrc = ref('');
 
 const laboratoriosList = ['Lab de Automatización - Pesado I', 'Lab Eléctrica - Pesado I', 'Lab Electrónica - Pesado I', 'Lab de Ciencias Básicas - Pesado I', 'Lab Manufactura - Pesado II', 'Lab Metrología - Pesado II', 'Cómputo III - Docencia II'];
 const aulasList = ['AU 106 Docencia III', 'AU 107 Docencia III', 'AU 108 Docencia III', 'AU 109 Docencia III', 'AU 110 Docencia III', 'AU 111 Docencia III', 'AU 406 Docencia IV', 'AU 407 Docencia IV', 'AU 408 Docencia IV', 'AU Virtual'];
@@ -232,6 +253,7 @@ const generarSiluetas = () => {
 // --- COMPUTED ---
 const gruposList = computed(() => [...new Set(horarios.value.map(h => h.grupo).filter(g => g))].sort());
 const maestrosList = computed(() => [...new Set(horarios.value.map(h => h.docente).filter(d => d))].sort());
+
 const horasTotalesMaestro = computed(() => {
   const cs = horarios.value.filter(h => h.docente === maestroSeleccionado.value);
   let tm = 0; const pd = {}; cs.forEach(c => {
@@ -285,22 +307,35 @@ const abrirDetalle = (c) => { if(c) { claseSeleccionada.value = c; modalVisible.
 const imprimirPDF = () => window.print();
 const fallbackLogo = (e) => e.target.src = 'https://via.placeholder.com/150?text=Logo';
 
-// --- DESCARGA JPG MEJORADA ---
+// --- JPG DUAL CON PREVIEW ---
 const descargarImagen = async (formato) => {
   const el = document.querySelector('.hoja-horizontal'); if(!el) return;
+  if(formato === 'redes') { await generarPreviewRedes(el); return; }
+  const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
+  procesarDescarga(canvas, 'Horario_Carta');
+};
+
+const generarPreviewRedes = async (el) => {
   const orig = { w: el.style.width, h: el.style.height, mw: el.style.minWidth, p: el.style.padding };
-  try {
-    if(formato === 'redes') { el.style.width = '2040px'; el.style.height = '1913px'; el.style.minWidth = '2040px'; el.style.padding = '40px 60px'; }
-    const canvas = await html2canvas(el, { scale: formato === 'redes' ? 1 : 3, useCORS: true, backgroundColor: "#ffffff", onclone: (doc) => {
-      const cEl = doc.querySelector('.hoja-horizontal'); cEl.style.transform = 'scale(1)'; cEl.style.display = 'flex';
-      if(formato === 'redes') {
-        const t = cEl.querySelector('.texto-dorado-industrial'); if(t) t.style.fontSize = '3.5rem';
-        const b = cEl.querySelector('.barra-verde-industrial h2'); if(b) b.style.fontSize = '1.8rem';
-      }
-    }});
-    Object.assign(el.style, { width: orig.w, height: orig.h, minWidth: orig.mw, padding: orig.p });
-    const link = document.createElement('a'); link.download = `Horario_${formato}_${Date.now()}.jpg`; link.href = canvas.toDataURL("image/jpeg", 0.95); link.click();
-  } catch(e) { console.error(e); Object.assign(el.style, { width: orig.w, height: orig.h }); }
+  Object.assign(el.style, { width: '2040px', height: '1913px', minWidth: '2040px', padding: '60px 80px' });
+  const canvas = await html2canvas(el, { scale: 1, useCORS: true, onclone: (doc) => {
+    const cEl = doc.querySelector('.hoja-horizontal'); cEl.style.display = 'flex';
+    const h1 = cEl.querySelector('.texto-dorado-industrial'); if(h1) h1.style.fontSize = '3.8rem';
+    const h2 = cEl.querySelector('.barra-verde-industrial h2'); if(h2) h2.style.fontSize = '2rem';
+    cEl.querySelectorAll('.clase-info div').forEach(c => c.style.fontSize = '1.1rem');
+  }});
+  imgPreviewSrc.value = canvas.toDataURL("image/jpeg", 0.95);
+  previewRedesVisible.value = true;
+  Object.assign(el.style, { width: orig.w, height: orig.h, minWidth: orig.mw, padding: orig.p });
+};
+
+const confirmarDescargaRedes = () => {
+  const link = document.createElement('a'); link.download = `Horario_Redes_${Date.now()}.jpg`; link.href = imgPreviewSrc.value; link.click();
+  previewRedesVisible.value = false;
+};
+
+const procesarDescarga = (canvas, nom) => {
+  const link = document.createElement('a'); link.download = `${nom}_${Date.now()}.jpg`; link.href = canvas.toDataURL("image/jpeg", 0.95); link.click();
 };
 
 const exportarExcel = () => {
@@ -331,7 +366,6 @@ onMounted(async () => {
 .header-verde { background: #004d40 !important; color: white !important; font-weight: 800; font-size: 0.8rem; }
 .bg-hora { background-color: #cfd8dc !important; font-size: 0.55rem; width: 75px; }
 .bg-receso { background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #e8e8e8 10px, #e8e8e8 20px) !important; color: #666 !important; font-size: 0.75rem; }
-.celda-clase { position: relative; cursor: pointer; }
 .clase-info { text-align: center; line-height: 0.95; }
 .fs-docente, .fs-materia { font-size: 0.55rem; }
 .industrial-bg-pattern { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(0, 91, 79, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 91, 79, 0.03) 1px, transparent 1px); background-size: 20px 20px; z-index: 0; }
