@@ -1,7 +1,6 @@
 <template>
   <div>
-    <!-- Cabecera: Título izquierda, Reloj centro, Botón derecha -->
-<div class="container-fluid px-3 px-md-4 px-lg-5 py-3 bg-light border-bottom">
+    <div class="container-fluid px-3 px-md-4 px-lg-5 py-3 bg-light border-bottom">
       <div class="row align-items-center">
         <div class="col-12 col-md-4 text-start text-md-start mb-3 mb-md-0">
           <h1 class="fs-2 fw-bold text-primary mb-0">
@@ -36,7 +35,6 @@
       </div>
     </div>
 
-    <!-- Tarjetas de laboratorios -->
     <div class="container-fluid px-3 px-md-4 px-lg-5 py-4">
       <div class="row g-3 g-md-4">
         <div v-for="lab in laboratorios" :key="lab.nombre" class="col-12 col-md-6 col-lg-6">
@@ -47,7 +45,6 @@
             </div>
 
             <div class="card-body py-3">
-              <!-- Clase actual -->
               <div v-if="claseActual(lab.nombre)">
                 <div class="row g-3 align-items-center text-center text-md-start">
                   <div class="col-12 col-md-4 d-flex flex-column align-items-center">
@@ -92,7 +89,6 @@
                 <p class="text-muted fw-bold small mb-0">Sin clase en este momento</p>
               </div>
 
-              <!-- Próximas clases: scroll manual, hasta 10 -->
               <div class="mt-3 pt-3 border-top">
                 <h6 class="text-muted text-center mb-2 small">Próximas clases hoy</h6>
                 <div v-if="proximasClases(lab.nombre).length > 0" class="proximas-scroll">
@@ -130,7 +126,6 @@
       </div>
     </div>
 
-    <!-- MODAL HORARIO COMPLETO (con iconos en cada lab) -->
     <div v-if="showFullSchedule" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.6);">
       <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-md-down">
         <div class="modal-content shadow-lg">
@@ -139,7 +134,6 @@
             <button type="button" class="btn-close btn-close-white" @click="showFullSchedule = false"></button>
           </div>
           <div class="modal-body p-4">
-            <!-- Selector de día -->
             <div class="card mb-4 border-0 shadow-sm">
               <div class="card-body">
                 <label class="form-label fw-bold">Seleccionar día</label>
@@ -149,13 +143,11 @@
               </div>
             </div>
 
-            <!-- Botón agregar clase -->
             <div class="mb-4 border-bottom pb-2">
               <h5 class="mb-0 fw-bold text-secondary">Clases Programadas</h5>
             </div>
 
-            <!-- Formulario colapsable -->
-<transition name="fade">
+            <transition name="fade">
               <div v-if="showForm" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.75); z-index: 1060;">
                 <div class="modal-dialog modal-dialog-centered modal-xl">
                   <div class="modal-content shadow-lg border-0">
@@ -223,7 +215,6 @@
               </div>
             </transition>
 
-            <!-- Tabla de clases por laboratorio (con iconos) -->
             <div class="mt-4">
               <div v-for="lab in laboratorios" :key="lab.nombre" class="mb-5 bg-white p-3 rounded shadow-sm border">
                 <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
@@ -352,20 +343,19 @@ const laboratorios = ref([
     nombre: 'Lab Metrología - Pesado II', 
     color: '#690035ff', 
     logo: '/logos/reloj.png', 
-    icon: 'bi bi-stopwatch'  // Cronómetro/reloj para medición precisa
+    icon: 'bi bi-stopwatch'  
   },
   { 
     nombre: 'Cómputo III - Docencia II', 
     color: '#576463ff', 
     logo: '/logos/computadora.png', 
-    icon: 'bi bi-pc-display'  // Monitor + CPU, ideal para sala de cómputo
+    icon: 'bi bi-pc-display'  
   },
   { 
     nombre: 'Lab Manufactura - Pesado II', 
     color: '#395a0fff', 
     logo: '/logos/electronica.png', 
-    icon: 'bi bi-tools'  // Herramientas / manufactura
-    // Alternativas buenas: bi-gear-wide-connected o bi-cone-striped (cono de seguridad/tráfico)
+    icon: 'bi bi-tools'  
   },
 ])
 
@@ -388,24 +378,15 @@ const form = ref({
 })
 
 // --- ESCÁNER DE IMÁGENES DE DOCENTES ---
-// Vite lee automáticamente todos los archivos png, jpg y jpeg de esta carpeta
 const imagenesDocentes = import.meta.glob('/public/maestros_manto/*.{png,jpg,jpeg}');
 
 const listaMaestrosDirectorio = computed(() => {
   const nombres = [];
   for (const path in imagenesDocentes) {
-    // 1. Decodificamos la ruta para que los códigos como %C3%A1 vuelvan a ser acentos (á, é, í...)
     let pathDecodificado = decodeURIComponent(path);
-
-    // 2. Extraemos el nombre del archivo sin la extensión
     let nombreArchivo = pathDecodificado.split('/').pop().replace(/\.[^/.]+$/, "");
-    
-    // 3. Reemplazamos los guiones bajos por espacios
     let nombreLimpio = nombreArchivo.replace(/_/g, ' ');
-    
-    // 4. Normalizamos el texto (ayuda a que el navegador iguale perfectamente los acentos con tu base de datos)
     nombreLimpio = nombreLimpio.normalize('NFC');
-    
     nombres.push(nombreLimpio);
   }
   return nombres.sort(); 
@@ -491,17 +472,17 @@ function proximasClases(labNombre) {
   return horarios.value
     .filter(c => c.dia === hoy && c.laboratorio === labNombre && c.horaInicio > horaActualStr)
     .sort((a, b) => a.horaInicio.localeCompare(b.horaInicio))
-    .slice(0, 10)  // Hasta 10 clases
+    .slice(0, 10)  
 }
 
+// --- FUNCIÓN FOTO DOCENTE CORREGIDA ---
 function fotoDocente(nombreDocente) {
-  if (!nombreDocente) return null
-  const nombreArchivo = nombreDocente
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9]/g, '_')
-    .replace(/_+/g, '_') + '.png'
-  return `/maestros_manto/${nombreArchivo}`
+  if (!nombreDocente) return null;
+  const nombreNormalizado = nombreDocente.trim().normalize('NFC');
+  const nombreProcesado = nombreNormalizado.replace(/\s+/g, '_');
+  const ext = nombreNormalizado.includes('Gallegos Amador Benito') ? '.jpg' : '.png';
+  const nombreSeguro = encodeURIComponent(nombreProcesado);
+  return `/maestros_manto/${nombreSeguro}${ext}`;
 }
 
 const clasesDelDia = computed(() => 
@@ -514,28 +495,22 @@ const clasesDelDiaFiltro = computed(() => {
   return (labNombre) => clasesDelDia.value.filter(c => c.laboratorio === labNombre)
 })
 
-// --- FUNCIONES DE APOYO PARA HORAS ---
-// Convierte "12:30" a minutos (750) para poder calcular matemáticamente
 function timeToMinutes(timeStr) {
   if (!timeStr) return 0;
   const [h, m] = timeStr.split(':').map(Number);
   return h * 60 + m;
 }
 
-// Verifica si dos rangos de tiempo se cruzan
 function hayChoque(inicio1, fin1, inicio2, fin2) {
   return inicio1 < fin2 && fin1 > inicio2;
 }
 
-// --- FUNCIÓN INTELIGENTE PARA SUGERIR HORARIOS ---
 function sugerirHorario(dia, laboratorio, docente, minutosDuracion) {
-  const inicioJornada = 7 * 60; // 07:00
-  const finJornada = 18 * 60; // 18:00
+  const inicioJornada = 7 * 60; 
+  const finJornada = 18 * 60; 
   
-  // Clases de ese día para ese laboratorio Y ese docente
   const ocupados = horarios.value.filter(c => c.dia === dia && (c.laboratorio === laboratorio || c.docente === docente));
   
-  // Buscar un hueco libre
   for (let t = inicioJornada; t <= finJornada - minutosDuracion; t += 30) {
     const posibleFin = t + minutosDuracion;
     const choca = ocupados.some(c => hayChoque(t, posibleFin, timeToMinutes(c.horaInicio), timeToMinutes(c.horaFin)));
@@ -549,7 +524,6 @@ function sugerirHorario(dia, laboratorio, docente, minutosDuracion) {
   return "No hay bloques disponibles este día.";
 }
 
-// --- NUEVA FUNCIÓN SAVE CLASE CON VALIDACIÓN ---
 async function saveClase() {
   const inicioNuevo = timeToMinutes(form.value.horaInicio);
   const finNuevo = timeToMinutes(form.value.horaFin);
@@ -559,12 +533,10 @@ async function saveClase() {
     return alert("La hora de inicio debe ser menor a la hora de fin.");
   }
 
-  // Filtrar clases del mismo día (excluyendo la clase actual si estamos editando)
   const clasesDelDiaEvaluar = horarios.value.filter(c => 
     c.dia === form.value.dia && c.id !== editId.value
   );
 
-  // 1. Validar Choque de Laboratorio / Aula
   const choqueLugar = clasesDelDiaEvaluar.find(c => 
     c.laboratorio === form.value.laboratorio && 
     hayChoque(inicioNuevo, finNuevo, timeToMinutes(c.horaInicio), timeToMinutes(c.horaFin))
@@ -575,7 +547,6 @@ async function saveClase() {
     return alert(`🚨 ERROR DE ESPACIO:\nEl ${form.value.laboratorio} ya está ocupado por el grupo ${choqueLugar.grupo} (${choqueLugar.materia}) de ${choqueLugar.horaInicio} a ${choqueLugar.horaFin}.\n\n💡 Sugerencia disponible: ${sugerencia}`);
   }
 
-  // 2. Validar Choque de Docente
   const choqueDocente = clasesDelDiaEvaluar.find(c => 
     c.docente === form.value.docente && 
     hayChoque(inicioNuevo, finNuevo, timeToMinutes(c.horaInicio), timeToMinutes(c.horaFin))
@@ -586,7 +557,6 @@ async function saveClase() {
     return alert(`🚨 ERROR DE DOCENTE:\nEl maestro ${form.value.docente} ya imparte clases en ${choqueDocente.laboratorio} de ${choqueDocente.horaInicio} a ${choqueDocente.horaFin} en este mismo día.\n¡Un maestro no puede estar en dos lugares a la vez!\n\n💡 Sugerencia disponible: ${sugerencia}`);
   }
 
-  // Si pasa las validaciones, guardamos
   try {
     if (editMode.value) {
       await axios.put(`${API_URL}/${editId.value}`, form.value);
@@ -635,22 +605,17 @@ function cancelEdit() {
 }
 
 function abrirFormularioNuevo(nombreLaboratorio = null) {
-  cancelEdit(); // Resetea el formulario por si había algo escrito
-  
-  // Si le dimos clic al botón de un laboratorio específico, lo pre-selecciona
+  cancelEdit(); 
   if (nombreLaboratorio) {
     form.value.laboratorio = nombreLaboratorio;
   }
-  
-  showForm.value = true; // Abre el modal
+  showForm.value = true; 
 }
 function cerrarFormulario() {
   showForm.value = false;
-  cancelEdit(); // Resetea todo a blanco
+  cancelEdit(); 
 }
 
-
-// Función de ayuda para la tabla de impresión
 const clasesPorHora = (labNombre, horaInicioFija) => {
   return clasesDelDia.value.filter(c => 
     c.laboratorio === labNombre && 
@@ -659,15 +624,9 @@ const clasesPorHora = (labNombre, horaInicioFija) => {
   );
 };
 
-// Función que dispara el PDF
 const imprimirHorario = () => {
   window.print();
 };
-
-
-
-
-
 </script>
 
 <style scoped>
@@ -683,7 +642,6 @@ const imprimirHorario = () => {
   transition: all 0.3s ease; 
 }
 
-/* Próximas clases: scroll manual */
 .proximas-scroll {
   overflow-x: auto;
   overflow-y: hidden;
@@ -696,7 +654,6 @@ const imprimirHorario = () => {
   text-align: center;
 }
 
-/* Responsividad móvil */
 @media (max-width: 767px) {
   .fs-2 { font-size: 1.8rem !important; }
   .fs-3 { font-size: 2rem !important; }
@@ -707,18 +664,11 @@ const imprimirHorario = () => {
   .proxima-item { min-width: 180px; }
 }
 
-
-
-
-
-/* CSS PARA GENERAR EL PDF */
 @media print {
-  /* Ocultar toda la app normal */
   body * {
     visibility: hidden;
   }
   
-  /* Solo mostrar la zona de impresión */
   #zona-impresion, #zona-impresion * {
     visibility: visible;
   }
@@ -731,14 +681,10 @@ const imprimirHorario = () => {
     display: block !important;
   }
 
-  /* Estilos de tabla para PDF */
   .table-bordered th, .table-bordered td {
     border: 2px solid black !important;
     font-size: 10px;
     padding: 8px;
   }
 }
-
-
-
 </style>
