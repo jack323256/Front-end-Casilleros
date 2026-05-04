@@ -328,14 +328,6 @@
       </table>
     </div>
 
-
-
-
-
-
-
-
-
 </template>
 
 <script setup>
@@ -356,61 +348,61 @@ const laboratorios = ref([
     nombre: 'AU 106 Docencia III', 
     color: '#1565C0', 
     logo: '/logos/automatizacion.png', 
-    icon: 'bi bi-easel2-fill'  // Caballete con pizarra (clásico de aula)
+    icon: 'bi bi-easel2-fill'  
   },
   { 
     nombre: 'AU 107 Docencia III', 
     color: '#7B1FA2', 
     logo: '/logos/ciencias.png', 
-    icon: 'bi bi-book-fill'  // Libro abierto (lectura/estudio)
+    icon: 'bi bi-book-fill'  
   },
   { 
     nombre: 'AU 108 Docencia III', 
     color: '#F57C00', 
     logo: '/logos/electrica.png', 
-    icon: 'bi bi-pencil-fill'  // Lápiz (escribir/notas)
+    icon: 'bi bi-pencil-fill'  
   },
   { 
     nombre: 'AU 109 Docencia III', 
     color: '#00695C', 
     logo: '/logos/electronica.png', 
-    icon: 'bi bi-projector-fill'  // Proyector (clases modernas)
+    icon: 'bi bi-projector-fill'  
   },
   { 
     nombre: 'AU 110 Docencia III', 
     color: '#690035ff', 
     logo: '/logos/reloj.png', 
-    icon: 'bi bi-journal-text'  // Cuaderno de notas/clase
+    icon: 'bi bi-journal-text'  
   },
   { 
     nombre: 'AU 111 Docencia III', 
     color: '#576463ff', 
     logo: '/logos/computadora.png', 
-    icon: 'bi bi-pc-display-horizontal'  // Computadoras (sala con PCs)
+    icon: 'bi bi-pc-display-horizontal'  
   },
   { 
     nombre: 'AU 406 Docencia IV', 
     color: '#395a0fff', 
     logo: '/logos/electronica.png', 
-    icon: 'bi bi-backpack-fill'  // Mochila escolar
+    icon: 'bi bi-backpack-fill'  
   },
   { 
     nombre: 'AU 407 Docencia IV', 
     color: '#395a0fff', 
     logo: '/logos/electronica.png', 
-    icon: 'bi bi-laptop-fill'  // Laptop (trabajo individual)
+    icon: 'bi bi-laptop-fill'  
   },
   { 
     nombre: 'AU 408 Docencia IV', 
     color: '#395a0fff', 
     logo: '/logos/electronica.png', 
-    icon: 'bi bi-people-fill'  // Grupo de estudiantes
+    icon: 'bi bi-people-fill'  
   },
   { 
     nombre: 'AU Virtual', 
     color: '#395a0fff', 
     logo: '/logos/electronica.png', 
-    icon: 'bi bi-camera2'  // Grupo de estudiantes
+    icon: 'bi bi-camera2'  
   },
 ])
 
@@ -423,7 +415,7 @@ const editMode = ref(false)
 const editId = ref(null)
 
 const form = ref({
-  dia: diaSeleccionado.value, // <-- Cambio: usar el día seleccionado en lugar de 'Lunes'
+  dia: diaSeleccionado.value, 
   laboratorio: laboratorios.value[0].nombre,
   materia: '',
   grupo: '',
@@ -433,21 +425,18 @@ const form = ref({
 })
 
 // --- ESCÁNER DE IMÁGENES DE DOCENTES ---
-// Vite lee automáticamente todos los archivos png, jpg y jpeg de esta carpeta
 const imagenesDocentes = import.meta.glob('/public/maestros_manto/*.{png,jpg,jpeg}');
 
 const listaMaestrosDirectorio = computed(() => {
   const nombres = [];
   for (const path in imagenesDocentes) {
-    // 1. Extrae el nombre del archivo (ej. "Blas_Sanchez_Luis_Angel.png" -> "Blas_Sanchez_Luis_Angel")
-    let nombreArchivo = path.split('/').pop().replace(/\.[^/.]+$/, "");
-    
-    // 2. Reemplaza los guiones bajos por espacios (ej. "Blas Sanchez Luis Angel")
+    let pathDecodificado = decodeURIComponent(path);
+    let nombreArchivo = pathDecodificado.split('/').pop().replace(/\.[^/.]+$/, "");
     let nombreLimpio = nombreArchivo.replace(/_/g, ' ');
-    
+    nombreLimpio = nombreLimpio.normalize('NFC');
     nombres.push(nombreLimpio);
   }
-  return nombres.sort(); // Los ordena alfabéticamente
+  return nombres.sort(); 
 });
 
 function detectarCarrera(grupo) {
@@ -530,17 +519,17 @@ function proximasClases(labNombre) {
   return horarios.value
     .filter(c => c.dia === hoy && c.laboratorio === labNombre && c.horaInicio > horaActualStr)
     .sort((a, b) => a.horaInicio.localeCompare(b.horaInicio))
-    .slice(0, 10)  // Hasta 10 clases
+    .slice(0, 10)  
 }
 
+// --- FUNCIÓN FOTO DOCENTE CORREGIDA ---
 function fotoDocente(nombreDocente) {
-  if (!nombreDocente) return null
-  const nombreArchivo = nombreDocente
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9]/g, '_')
-    .replace(/_+/g, '_') + '.png'
-  return `/maestros_manto/${nombreArchivo}`
+  if (!nombreDocente) return null;
+  const nombreNormalizado = nombreDocente.trim().normalize('NFC');
+  const nombreProcesado = nombreNormalizado.replace(/\s+/g, '_');
+  const ext = nombreNormalizado.includes('Gallegos Amador Benito') ? '.jpg' : '.png';
+  const nombreSeguro = encodeURIComponent(nombreProcesado);
+  return `/maestros_manto/${nombreSeguro}${ext}`;
 }
 
 const clasesDelDia = computed(() => 
@@ -553,28 +542,22 @@ const clasesDelDiaFiltro = computed(() => {
   return (labNombre) => clasesDelDia.value.filter(c => c.laboratorio === labNombre)
 })
 
-// --- FUNCIONES DE APOYO PARA HORAS ---
-// Convierte "12:30" a minutos (750) para poder calcular matemáticamente
 function timeToMinutes(timeStr) {
   if (!timeStr) return 0;
   const [h, m] = timeStr.split(':').map(Number);
   return h * 60 + m;
 }
 
-// Verifica si dos rangos de tiempo se cruzan
 function hayChoque(inicio1, fin1, inicio2, fin2) {
   return inicio1 < fin2 && fin1 > inicio2;
 }
 
-// --- FUNCIÓN INTELIGENTE PARA SUGERIR HORARIOS ---
 function sugerirHorario(dia, laboratorio, docente, minutosDuracion) {
-  const inicioJornada = 7 * 60; // 07:00
-  const finJornada = 18 * 60; // 18:00
+  const inicioJornada = 7 * 60; 
+  const finJornada = 18 * 60; 
   
-  // Clases de ese día para ese laboratorio Y ese docente
   const ocupados = horarios.value.filter(c => c.dia === dia && (c.laboratorio === laboratorio || c.docente === docente));
   
-  // Buscar un hueco libre
   for (let t = inicioJornada; t <= finJornada - minutosDuracion; t += 30) {
     const posibleFin = t + minutosDuracion;
     const choca = ocupados.some(c => hayChoque(t, posibleFin, timeToMinutes(c.horaInicio), timeToMinutes(c.horaFin)));
@@ -588,8 +571,6 @@ function sugerirHorario(dia, laboratorio, docente, minutosDuracion) {
   return "No hay bloques disponibles este día.";
 }
 
-// --- NUEVA FUNCIÓN SAVE CLASE CON VALIDACIÓN ---
-// --- NUEVA FUNCIÓN SAVE CLASE CON VALIDACIÓN (CON EXCEPCIONES VIRTUALES) ---
 async function saveClase() {
   const inicioNuevo = timeToMinutes(form.value.horaInicio);
   const finNuevo = timeToMinutes(form.value.horaFin);
@@ -599,14 +580,11 @@ async function saveClase() {
     return alert("La hora de inicio debe ser menor a la hora de fin.");
   }
 
-  // Filtrar clases del mismo día (excluyendo la clase actual si estamos editando)
   const clasesDelDiaEvaluar = horarios.value.filter(c => 
     c.dia === form.value.dia && c.id !== editId.value
   );
 
-  // 1. Validar Choque de Laboratorio / Aula
   const choqueLugar = clasesDelDiaEvaluar.find(c => 
-    // EXCEPCIÓN: AU Virtual no tiene límite de espacio físico, caben infinitos grupos
     form.value.laboratorio !== 'AU Virtual' && 
     c.laboratorio === form.value.laboratorio && 
     hayChoque(inicioNuevo, finNuevo, timeToMinutes(c.horaInicio), timeToMinutes(c.horaFin))
@@ -617,12 +595,9 @@ async function saveClase() {
     return alert(`🚨 ERROR DE ESPACIO:\nEl ${form.value.laboratorio} ya está ocupado por el grupo ${choqueLugar.grupo} (${choqueLugar.materia}) de ${choqueLugar.horaInicio} a ${choqueLugar.horaFin}.\n\n💡 Sugerencia disponible: ${sugerencia}`);
   }
 
-  // 2. Validar Choque de Docente
   const choqueDocente = clasesDelDiaEvaluar.find(c => {
     const esMismoDocente = c.docente === form.value.docente;
     const hayEmpalme = hayChoque(inicioNuevo, finNuevo, timeToMinutes(c.horaInicio), timeToMinutes(c.horaFin));
-    
-    // EXCEPCIÓN: Si el maestro está en AU Virtual y la nueva clase también es AU Virtual, NO es choque (es unión de grupos)
     const excepcionVirtual = c.laboratorio === 'AU Virtual' && form.value.laboratorio === 'AU Virtual';
 
     return esMismoDocente && hayEmpalme && !excepcionVirtual;
@@ -633,7 +608,6 @@ async function saveClase() {
     return alert(`🚨 ERROR DE DOCENTE:\nEl maestro ${form.value.docente} ya imparte clases en ${choqueDocente.laboratorio} de ${choqueDocente.horaInicio} a ${choqueDocente.horaFin} en este mismo día.\n¡Un maestro no puede estar en dos lugares físicos a la vez!\n\n💡 Sugerencia disponible: ${sugerencia}`);
   }
 
-  // Si pasa las validaciones, guardamos
   try {
     if (editMode.value) {
       await axios.put(`${API_URL}/${editId.value}`, form.value);
@@ -671,7 +645,7 @@ function cancelEdit() {
   editMode.value = false
   editId.value = null
   form.value = {
-    dia: diaSeleccionado.value, // <-- Cambio principal: mantener el día de la vista actual
+    dia: diaSeleccionado.value, 
     laboratorio: laboratorios.value[0].nombre,
     materia: '',
     grupo: '',
@@ -681,25 +655,19 @@ function cancelEdit() {
   }
 }
 
-
 function abrirFormularioNuevo(nombreLaboratorio = null) {
-  cancelEdit(); // Resetea el formulario y ahora mantiene el 'diaSeleccionado'
-
-  // Pre-selecciona el laboratorio si se hizo clic en un botón específico
+  cancelEdit(); 
   if (nombreLaboratorio) {
     form.value.laboratorio = nombreLaboratorio;
   }
-  
-  showForm.value = true; // Abre el modal
+  showForm.value = true; 
 }
 
 function cerrarFormulario() {
   showForm.value = false;
-  cancelEdit(); // Resetea todo a blanco
+  cancelEdit(); 
 }
 
-
-// Función de ayuda para la tabla de impresión
 const clasesPorHora = (labNombre, horaInicioFija) => {
   return clasesDelDia.value.filter(c => 
     c.laboratorio === labNombre && 
@@ -708,19 +676,9 @@ const clasesPorHora = (labNombre, horaInicioFija) => {
   );
 };
 
-// Función que dispara el PDF
 const imprimirHorario = () => {
   window.print();
 };
-
-
-
-
-
-
-
-
-
 
 </script>
 
@@ -737,7 +695,6 @@ const imprimirHorario = () => {
   transition: all 0.3s ease; 
 }
 
-/* Próximas clases: scroll manual */
 .proximas-scroll {
   overflow-x: auto;
   overflow-y: hidden;
@@ -750,7 +707,6 @@ const imprimirHorario = () => {
   text-align: center;
 }
 
-/* Responsividad móvil */
 @media (max-width: 767px) {
   .fs-2 { font-size: 1.8rem !important; }
   .fs-3 { font-size: 2rem !important; }
@@ -761,14 +717,11 @@ const imprimirHorario = () => {
   .proxima-item { min-width: 180px; }
 }
 
-/* CSS PARA GENERAR EL PDF */
 @media print {
-  /* Ocultar toda la app normal */
   body * {
     visibility: hidden;
   }
   
-  /* Solo mostrar la zona de impresión */
   #zona-impresion, #zona-impresion * {
     visibility: visible;
   }
@@ -781,12 +734,10 @@ const imprimirHorario = () => {
     display: block !important;
   }
 
-  /* Estilos de tabla para PDF */
   .table-bordered th, .table-bordered td {
     border: 2px solid black !important;
     font-size: 10px;
     padding: 8px;
   }
 }
-
 </style>
