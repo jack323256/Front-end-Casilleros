@@ -145,11 +145,24 @@
             </table>
           </div>
 
-          <footer class="footer-industrial mt-1 pt-1">
+        <footer class="footer-industrial mt-1 pt-1">
             <div class="footer-line"></div>
             <div class="d-flex justify-content-between align-items-end w-100">
-               <h3 class="fw-bold fst-italic texto-verde-oscuro m-0 txt-cuatrimestre" style="font-size: 1.1rem;">{{ cuatrimestreAutomatico }}</h3>
-               <img src="/logos/somos_mantenimeinto.png" alt="UTXJ" class="logo-bottom-large" @error="fallbackLogo">
+               <!-- Parte Izquierda: Cuatrimestre -->
+               <div style="flex: 1; text-align: left;">
+                 <h3 class="fw-bold fst-italic texto-verde-oscuro m-0 txt-cuatrimestre" style="font-size: 1.1rem;">{{ cuatrimestreAutomatico }}</h3>
+               </div>
+               
+               <!-- Parte Central: Nueva Leyenda -->
+               <div style="flex: 2; text-align: center; padding-bottom: 2px;">
+                 <div class="fw-bold text-dark txt-firma-nombre" style="font-size: 1rem;">Dra. Irasema Carrera Muñoz</div>
+                 <div class="fw-bold text-dark txt-firma-puesto" style="font-size: 0.9rem;">Directora de División de la Carrera de Mantenimiento Industrial</div>
+               </div>
+
+               <!-- Parte Derecha: Logo -->
+               <div style="flex: 1; text-align: right;">
+                 <img src="/logos/somos_mantenimeinto.png" alt="UTXJ" class="logo-bottom-large" @error="fallbackLogo">
+               </div>
             </div>
           </footer>
         </div>
@@ -437,6 +450,8 @@ const descargarImagen = async (formato) => {
     
     const receso = clon.querySelector('.etiqueta-receso'); if(receso) { receso.style.fontSize = '2.8rem'; receso.style.letterSpacing = '50px'; }
     const cuatri = clon.querySelector('.txt-cuatrimestre'); if(cuatri) cuatri.style.fontSize = '2.5rem';
+    const firmaNombre = clon.querySelector('.txt-firma-nombre'); if(firmaNombre) firmaNombre.style.fontSize = '2.3rem';
+    const firmaPuesto = clon.querySelector('.txt-firma-puesto'); if(firmaPuesto) firmaPuesto.style.fontSize = '2.0rem';
     const lTop = clon.querySelector('.logo-top-large'); if(lTop) lTop.style.height = '180px';
     const lBot = clon.querySelector('.logo-bottom-large'); if(lBot) lBot.style.height = '150px';
 
