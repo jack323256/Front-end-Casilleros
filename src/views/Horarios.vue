@@ -394,15 +394,21 @@ const imagenesDocentes = import.meta.glob('/public/maestros_manto/*.{png,jpg,jpe
 const listaMaestrosDirectorio = computed(() => {
   const nombres = [];
   for (const path in imagenesDocentes) {
-    // 1. Extrae el nombre del archivo (ej. "Blas_Sanchez_Luis_Angel.png" -> "Blas_Sanchez_Luis_Angel")
-    let nombreArchivo = path.split('/').pop().replace(/\.[^/.]+$/, "");
+    // 1. Decodificamos la ruta para que los códigos como %C3%A1 vuelvan a ser acentos (á, é, í...)
+    let pathDecodificado = decodeURIComponent(path);
+
+    // 2. Extraemos el nombre del archivo sin la extensión
+    let nombreArchivo = pathDecodificado.split('/').pop().replace(/\.[^/.]+$/, "");
     
-    // 2. Reemplaza los guiones bajos por espacios (ej. "Blas Sanchez Luis Angel")
+    // 3. Reemplazamos los guiones bajos por espacios
     let nombreLimpio = nombreArchivo.replace(/_/g, ' ');
+    
+    // 4. Normalizamos el texto (ayuda a que el navegador iguale perfectamente los acentos con tu base de datos)
+    nombreLimpio = nombreLimpio.normalize('NFC');
     
     nombres.push(nombreLimpio);
   }
-  return nombres.sort(); // Los ordena alfabéticamente
+  return nombres.sort(); 
 });
 
 function detectarCarrera(grupo) {
