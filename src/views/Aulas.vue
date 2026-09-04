@@ -404,6 +404,12 @@ const laboratorios = ref([
     logo: '/logos/electronica.png', 
     icon: 'bi bi-camera2'  
   },
+    { 
+    nombre: 'Cancha Techada', 
+    color: '#395a0fff', 
+    logo: '/logos/electronica.png', 
+    icon: 'bi bi-nintendo-switch'  
+  },
 ])
 
 const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
