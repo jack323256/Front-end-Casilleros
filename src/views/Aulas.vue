@@ -362,6 +362,7 @@ const laboratorios = ref([
   { nombre: 'AU 408 Docencia IV', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-people-fill' },
   { nombre: 'AU Virtual', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-camera2' },
   { nombre: 'Cancha Techada', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-nintendo-switch' },
+  { nombre: 'Cancha Techada 2', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-nintendo-switch' },
   { nombre: 'Biblioteca', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-bank' },
 ])
 
