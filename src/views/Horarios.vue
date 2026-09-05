@@ -45,7 +45,6 @@
       <button class="btn btn-sm btn-danger fw-bold" @click="loadHorarios()">Reintentar</button>
     </div>
     
-
     <div class="container-fluid px-3 px-md-4 px-lg-5 py-4">
       <div class="row g-3 g-md-4">
         <div v-for="lab in laboratorios" :key="lab.nombre" class="col-12 col-md-6 col-lg-6">
@@ -137,6 +136,7 @@
       </div>
     </div>
 
+    <!-- Modal Principal Horario Completo -->
     <div v-if="showFullSchedule" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.6);">
       <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-md-down">
         <div class="modal-content shadow-lg">
@@ -144,20 +144,168 @@
             <h5 class="modal-title">Horario Completo y Administración</h5>
             <button type="button" class="btn-close btn-close-white" @click="showFullSchedule = false"></button>
           </div>
+          
           <div class="modal-body p-4">
-            <div class="card mb-4 border-0 shadow-sm">
-              <div class="card-body">
-                <label class="form-label fw-bold">Seleccionar día</label>
-                <select v-model="diaSeleccionado" class="form-select form-select-lg">
-                  <option v-for="dia in dias" :value="dia">{{ dia }}</option>
-                </select>
+            <!-- Navegación de Pestañas -->
+            <ul class="nav nav-tabs mb-4">
+              <li class="nav-item">
+                <a class="nav-link fw-bold" :class="{ active: tabActiva === 'dia' }" href="#" @click.prevent="tabActiva = 'dia'">
+                  <i class="bi bi-calendar-day me-2"></i>Vista por Día y Laboratorio
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link fw-bold" :class="{ active: tabActiva === 'grupo' }" href="#" @click.prevent="tabActiva = 'grupo'">
+                  <i class="bi bi-people-fill me-2"></i>Gestión Masiva por Grupo
+                </a>
+              </li>
+            </ul>
+
+            <!-- PESTAÑA 1: VISTA POR DÍA -->
+            <div v-if="tabActiva === 'dia'">
+              <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body">
+                  <label class="form-label fw-bold">Seleccionar día</label>
+                  <select v-model="diaSeleccionado" class="form-select form-select-lg">
+                    <option v-for="dia in dias" :key="dia" :value="dia">{{ dia }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-4 border-bottom pb-2">
+                <h5 class="mb-0 fw-bold text-secondary">Clases Programadas ({{ diaSeleccionado }})</h5>
+              </div>
+
+              <div class="mt-4">
+                <div v-for="lab in laboratorios" :key="lab.nombre" class="mb-5 bg-white p-3 rounded shadow-sm border">
+                  <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                    <div class="d-flex align-items-center">
+                      <i :class="lab.icon" class="me-3 text-primary" style="font-size: 2rem;"></i>
+                      <h5 class="mb-0 fw-bold" :style="{ color: lab.color }">{{ lab.nombre }}</h5>
+                    </div>
+                    
+                    <button 
+                      class="btn btn-success btn-sm rounded-circle shadow-sm d-flex justify-content-center align-items-center" 
+                      @click="abrirFormularioNuevo(lab.nombre)" 
+                      style="width: 35px; height: 35px;"
+                      title="Agregar clase a este espacio"
+                    >
+                      <i class="bi bi-plus fs-5"></i>
+                    </button>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle table-sm">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Hora</th>
+                          <th>Materia</th>
+                          <th>Grupo</th>
+                          <th>Docente</th>
+                          <th class="text-center">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="clase in clasesDelDiaFiltro(lab.nombre)" :key="clase.id">
+                          <td class="fw-bold small">{{ clase.horaInicio }} - {{ clase.horaFin }}</td>
+                          <td class="small">
+                            <div class="d-flex align-items-center gap-2">
+                              <img :src="logoCarrera(clase.grupo)" style="width: 30px; height: 30px; object-fit: contain; background: white; padding: 3px; border-radius: 6px;" />
+                              {{ clase.materia }}
+                            </div>
+                          </td>
+                          <td class="small">{{ clase.grupo }}</td>
+                          <td class="small">{{ clase.docente }}</td>
+                          <td class="text-center">
+                            <button class="btn btn-warning btn-sm me-1" @click="editClase(clase)">
+                              <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" @click="deleteClase(clase.id)">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr v-if="clasesDelDiaFiltro(lab.nombre).length === 0">
+                          <td colspan="5" class="text-center text-muted py-4 small">No hay clases programadas</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div v-if="clasesDelDia.length === 0" class="text-center py-5 text-muted">
+                  <i class="bi bi-calendar-x fs-1 d-block mb-3"></i>
+                  No hay clases programadas para {{ diaSeleccionado }}
+                </div>
               </div>
             </div>
 
-            <div class="mb-4 border-bottom pb-2">
-              <h5 class="mb-0 fw-bold text-secondary">Clases Programadas</h5>
+            <!-- PESTAÑA 2: VISTA POR GRUPO -->
+            <div v-if="tabActiva === 'grupo'">
+              <div class="card mb-4 border-0 shadow-sm bg-light">
+                <div class="card-body d-flex gap-3 align-items-end flex-wrap">
+                  <div class="flex-grow-1">
+                    <label class="form-label fw-bold">Escribe o selecciona el Grupo a gestionar</label>
+                    <input v-model="grupoSeleccionado" list="lista-grupos" class="form-control form-control-lg" placeholder="Ej: 2A MP" />
+                    <datalist id="lista-grupos">
+                      <option v-for="g in gruposExistentes" :key="g" :value="g"></option>
+                    </datalist>
+                  </div>
+                  <button class="btn btn-primary btn-lg" @click="abrirFormularioNuevo()" :disabled="!grupoSeleccionado">
+                    <i class="bi bi-plus-circle me-2"></i>Agregar Clase al Grupo
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="grupoSeleccionado">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="mb-0 fw-bold text-secondary">Horario de {{ grupoSeleccionado }}</h5>
+                  <button v-if="clasesDelGrupo.length > 0" class="btn btn-outline-danger btn-sm" @click="vaciarGrupo">
+                    <i class="bi bi-trash-fill me-1"></i> Eliminar Todo el Horario
+                  </button>
+                </div>
+
+                <div class="table-responsive bg-white rounded shadow-sm border p-3">
+                  <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                      <tr>
+                        <th>Día</th>
+                        <th>Hora</th>
+                        <th>Materia</th>
+                        <th>Laboratorio</th>
+                        <th>Docente</th>
+                        <th class="text-center">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="clase in clasesDelGrupo" :key="clase.id">
+                        <td class="fw-bold">{{ clase.dia }}</td>
+                        <td>{{ clase.horaInicio }} - {{ clase.horaFin }}</td>
+                        <td>{{ clase.materia }}</td>
+                        <td>
+                          <span class="badge text-dark" :style="{ backgroundColor: laboratorios.find(l => l.nombre === clase.laboratorio)?.color + '40' }">
+                            {{ clase.laboratorio }}
+                          </span>
+                        </td>
+                        <td class="small">{{ clase.docente }}</td>
+                        <td class="text-center text-nowrap">
+                          <button class="btn btn-warning btn-sm me-1" @click="editClase(clase)">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button class="btn btn-danger btn-sm" @click="deleteClase(clase.id)">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr v-if="clasesDelGrupo.length === 0">
+                        <td colspan="6" class="text-center text-muted py-4">No hay clases registradas para este grupo.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
 
+            <!-- MODAL FORMULARIO DE CLASE -->
             <transition name="fade">
               <div v-if="showForm" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.75); z-index: 1060;">
                 <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -176,18 +324,21 @@
                           <div class="col-12 col-md-4">
                             <label class="form-label fw-bold">Día</label>
                             <select v-model="form.dia" class="form-select" required>
-                              <option v-for="dia in dias" :value="dia">{{ dia }}</option>
+                              <option v-for="dia in dias" :key="dia" :value="dia">{{ dia }}</option>
                             </select>
                           </div>
                           <div class="col-12 col-md-4">
                             <label class="form-label fw-bold">Laboratorio</label>
                             <select v-model="form.laboratorio" class="form-select" required>
-                              <option v-for="lab in laboratorios" :value="lab.nombre">{{ lab.nombre }}</option>
+                              <option v-for="lab in laboratorios" :key="lab.nombre" :value="lab.nombre">{{ lab.nombre }}</option>
                             </select>
                           </div>
                           <div class="col-12 col-md-4">
                             <label class="form-label fw-bold">Materia</label>
-                            <input v-model="form.materia" class="form-control" required />
+                            <input v-model="form.materia" list="lista-materias" class="form-control" required placeholder="Escribe o selecciona..." />
+                            <datalist id="lista-materias">
+                              <option v-for="mat in materiasExistentes" :key="mat" :value="mat"></option>
+                            </datalist>
                           </div>
                           
                           <div class="col-12 col-md-3">
@@ -226,68 +377,6 @@
               </div>
             </transition>
 
-            <div class="mt-4">
-              <div v-for="lab in laboratorios" :key="lab.nombre" class="mb-5 bg-white p-3 rounded shadow-sm border">
-                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                  <div class="d-flex align-items-center">
-                    <i :class="lab.icon" class="me-3 text-primary" style="font-size: 2rem;"></i>
-                    <h5 class="mb-0 fw-bold" :style="{ color: lab.color }">{{ lab.nombre }}</h5>
-                  </div>
-                  
-                  <button 
-                    class="btn btn-success btn-sm rounded-circle shadow-sm d-flex justify-content-center align-items-center" 
-                    @click="abrirFormularioNuevo(lab.nombre)" 
-                    style="width: 35px; height: 35px;"
-                    title="Agregar clase a este espacio"
-                  >
-                    <i class="bi bi-plus fs-5"></i>
-                  </button>
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table table-striped table-hover align-middle table-sm">
-                    <thead class="table-light">
-                      <tr>
-                        <th>Hora</th>
-                        <th>Materia</th>
-                        <th>Grupo</th>
-                        <th>Docente</th>
-                        <th class="text-center">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="clase in clasesDelDiaFiltro(lab.nombre)" :key="clase.id">
-                        <td class="fw-bold small">{{ clase.horaInicio }} - {{ clase.horaFin }}</td>
-                        <td class="small">
-                          <div class="d-flex align-items-center gap-2">
-                            <img :src="logoCarrera(clase.grupo)" style="width: 30px; height: 30px; object-fit: contain; background: white; padding: 3px; border-radius: 6px;" />
-                            {{ clase.materia }}
-                          </div>
-                        </td>
-                        <td class="small">{{ clase.grupo }}</td>
-                        <td class="small">{{ clase.docente }}</td>
-                        <td class="text-center">
-                          <button class="btn btn-warning btn-sm me-1" @click="editClase(clase)">
-                            <i class="bi bi-pencil"></i>
-                          </button>
-                          <button class="btn btn-danger btn-sm" @click="deleteClase(clase.id)">
-                            <i class="bi bi-trash"></i>
-                          </button>
-                        </td>
-                      </tr>
-                      <tr v-if="clasesDelDiaFiltro(lab.nombre).length === 0">
-                        <td colspan="5" class="text-center text-muted py-4 small">No hay clases programadas</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div v-if="clasesDelDia.length === 0" class="text-center py-5 text-muted">
-                <i class="bi bi-calendar-x fs-1 d-block mb-3"></i>
-                No hay clases programadas para {{ diaSeleccionado }}
-              </div>
-            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="showFullSchedule = false">Cerrar</button>
@@ -297,39 +386,32 @@
     </div>
   </div>
 
-
-
-<div id="zona-impresion" class="d-none">
-      <div class="text-center mb-4">
-        <h2>Academia de Mantenimiento Industrial</h2>
-        <h3>Horario Escolar - {{ diaSeleccionado }}</h3>
-      </div>
-      <table class="table table-bordered border-dark text-center" style="width: 100%; border-collapse: collapse;">
-        <thead class="table-light border-dark">
-          <tr>
-            <th style="width: 15%;">HORA</th>
-            <th v-for="lab in laboratorios" :key="lab.nombre">{{ lab.nombre }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="hora in [7,8,9,10,11,12,13,14,15,16,17]" :key="hora">
-            <td class="fw-bold align-middle">{{ String(hora).padStart(2, '0') }}:00 a {{ String(hora+1).padStart(2, '0') }}:00</td>
-            <td v-for="lab in laboratorios" :key="lab.nombre" class="align-middle p-2">
-              <div v-for="c in clasesPorHora(lab.nombre, String(hora).padStart(2, '0') + ':00')" :key="c.id" class="small">
-                <strong>{{ c.grupo }}</strong><br>
-                {{ c.docente }}<br>
-                <span class="text-uppercase">{{ c.materia }}</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <div id="zona-impresion" class="d-none">
+    <div class="text-center mb-4">
+      <h2>Academia de Mantenimiento Industrial</h2>
+      <h3>Horario Escolar - {{ diaSeleccionado }}</h3>
     </div>
-
-
-
-
-
+    <table class="table table-bordered border-dark text-center" style="width: 100%; border-collapse: collapse;">
+      <thead class="table-light border-dark">
+        <tr>
+          <th style="width: 15%;">HORA</th>
+          <th v-for="lab in laboratorios" :key="lab.nombre">{{ lab.nombre }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="hora in [7,8,9,10,11,12,13,14,15,16,17]" :key="hora">
+          <td class="fw-bold align-middle">{{ String(hora).padStart(2, '0') }}:00 a {{ String(hora+1).padStart(2, '0') }}:00</td>
+          <td v-for="lab in laboratorios" :key="lab.nombre" class="align-middle p-2">
+            <div v-for="c in clasesPorHora(lab.nombre, String(hora).padStart(2, '0') + ':00')" :key="c.id" class="small">
+              <strong>{{ c.grupo }}</strong><br>
+              {{ c.docente }}<br>
+              <span class="text-uppercase">{{ c.materia }}</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <script setup>
@@ -348,32 +430,21 @@ let timer = null
 const cargando = ref(false)
 const errorConexion = ref(false)
 
+const tabActiva = ref('dia')
+const grupoSeleccionado = ref('')
+
 const laboratorios = ref([
   { nombre: 'Lab de Automatización - Pesado I', color: '#1565C0', logo: '/logos/automatizacion.png', icon: 'bi bi-cpu-fill' },
   { nombre: 'Lab de Ciencias Básicas - Pesado I', color: '#7B1FA2', logo: '/logos/ciencias.png', icon: 'bi bi-flask' },
   { nombre: 'Lab Eléctrica - Pesado I', color: '#F57C00', logo: '/logos/electrica.png', icon: 'bi bi-lightning-charge-fill' },
   { nombre: 'Lab Electrónica - Pesado I', color: '#00695C', logo: '/logos/electronica.png', icon: 'bi bi-motherboard-fill' },
-  { 
-    nombre: 'Lab Metrología - Pesado II', 
-    color: '#690035ff', 
-    logo: '/logos/reloj.png', 
-    icon: 'bi bi-stopwatch'  
-  },
-  { 
-    nombre: 'Cómputo III - Docencia II', 
-    color: '#576463ff', 
-    logo: '/logos/computadora.png', 
-    icon: 'bi bi-pc-display'  
-  },
-  { 
-    nombre: 'Lab Manufactura - Pesado II', 
-    color: '#395a0fff', 
-    logo: '/logos/electronica.png', 
-    icon: 'bi bi-tools'  
-  },
+  { nombre: 'Lab Metrología - Pesado II', color: '#690035ff', logo: '/logos/reloj.png', icon: 'bi bi-stopwatch' },
+  { nombre: 'Cómputo III - Docencia II', color: '#576463ff', logo: '/logos/computadora.png', icon: 'bi bi-pc-display' },
+  { nombre: 'Lab Manufactura - Pesado II', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-tools' },
 ])
 
 const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+const diasOrden = { 'Lunes': 1, 'Martes': 2, 'Miércoles': 3, 'Jueves': 4, 'Viernes': 5, 'Sábado': 6, 'Domingo': 7 }
 
 const showFullSchedule = ref(false)
 const diaSeleccionado = ref('Lunes')
@@ -444,7 +515,6 @@ async function loadHorarios(intentos = 3) {
   } catch (err) {
     console.warn(`Intento fallido. Intentos restantes: ${intentos - 1}`, err)
     if (intentos > 1) {
-      // Espera 3 segundos antes de volver a intentar, dando tiempo a Render de despertar
       setTimeout(() => loadHorarios(intentos - 1), 3000)
     } else {
       cargando.value = false;
@@ -504,7 +574,6 @@ function proximasClases(labNombre) {
     .slice(0, 10)  
 }
 
-// --- FUNCIÓN FOTO DOCENTE CORREGIDA ---
 function fotoDocente(nombreDocente) {
   if (!nombreDocente) return null;
   const nombreNormalizado = nombreDocente.trim().normalize('NFC');
@@ -522,6 +591,29 @@ const clasesDelDia = computed(() =>
 
 const clasesDelDiaFiltro = computed(() => {
   return (labNombre) => clasesDelDia.value.filter(c => c.laboratorio === labNombre)
+})
+
+// Variables Computadas Nuevas (Grupos y Materias Dinámicas)
+const clasesDelGrupo = computed(() => {
+  if (!grupoSeleccionado.value) return []
+  return horarios.value
+    .filter(c => c.grupo === grupoSeleccionado.value)
+    .sort((a, b) => {
+      if (diasOrden[a.dia] !== diasOrden[b.dia]) {
+        return diasOrden[a.dia] - diasOrden[b.dia]
+      }
+      return a.horaInicio.localeCompare(b.horaInicio)
+    })
+})
+
+const gruposExistentes = computed(() => {
+  const grupos = new Set(horarios.value.map(c => c.grupo))
+  return Array.from(grupos).sort()
+})
+
+const materiasExistentes = computed(() => {
+  const materias = new Set(horarios.value.map(c => c.materia))
+  return Array.from(materias).sort()
 })
 
 function timeToMinutes(timeStr) {
@@ -619,11 +711,28 @@ async function deleteClase(id) {
   }
 }
 
+async function vaciarGrupo() {
+  if (!grupoSeleccionado.value) return;
+  if (confirm(`¿Estás seguro de eliminar TODAS las clases del grupo ${grupoSeleccionado.value}? Esta acción no se puede deshacer.`)) {
+    cargando.value = true;
+    try {
+      const promesasDelete = clasesDelGrupo.value.map(clase => axios.delete(`${API_URL}/${clase.id}`));
+      await Promise.all(promesasDelete);
+      await loadHorarios();
+      alert('Horario del grupo eliminado correctamente.');
+    } catch (err) {
+      alert('Error al eliminar las clases del grupo.');
+    } finally {
+      cargando.value = false;
+    }
+  }
+}
+
 function cancelEdit() {
   editMode.value = false
   editId.value = null
   form.value = {
-    dia: diaSeleccionado.value, // Aquí está la corrección clave
+    dia: diaSeleccionado.value,
     laboratorio: laboratorios.value[0].nombre,
     materia: '',
     grupo: '',
@@ -635,11 +744,18 @@ function cancelEdit() {
 
 function abrirFormularioNuevo(nombreLaboratorio = null) {
   cancelEdit(); 
+  
   if (nombreLaboratorio) {
     form.value.laboratorio = nombreLaboratorio;
   }
+  
+  if (tabActiva.value === 'grupo' && grupoSeleccionado.value) {
+    form.value.grupo = grupoSeleccionado.value;
+  }
+  
   showForm.value = true; 
 }
+
 function cerrarFormulario() {
   showForm.value = false;
   cancelEdit(); 
@@ -653,9 +769,6 @@ const clasesPorHora = (labNombre, horaInicioFija) => {
   );
 };
 
-const imprimirHorario = () => {
-  window.print();
-};
 </script>
 
 <style scoped>
@@ -681,6 +794,14 @@ const imprimirHorario = () => {
 .proxima-item {
   min-width: 220px;
   text-align: center;
+}
+
+.nav-tabs .nav-link {
+  color: #6c757d;
+}
+.nav-tabs .nav-link.active {
+  color: #0d6efd;
+  border-bottom: 3px solid #0d6efd;
 }
 
 @media (max-width: 767px) {
