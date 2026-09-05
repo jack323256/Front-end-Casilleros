@@ -498,6 +498,8 @@ const clasesDelGrupo = computed(() => {
     });
 });
 
+  
+
 // --- DETECTOR DE HUECOS LIBRES ---
 function numAMinutos(timeStr) {
   if (!timeStr) return 0;
@@ -649,6 +651,15 @@ function abrirFormularioNuevo(nombreLaboratorio = null) {
 }
 
 function cerrarFormulario() { showForm.value = false; cancelEdit(); }
+
+// --- FUNCIÓN PARA LA ZONA DE IMPRESIÓN ---
+const clasesPorHora = (labNombre, horaInicioFija) => {
+  return clasesDelDia.value.filter(c => 
+    c.laboratorio === labNombre && 
+    c.horaInicio <= horaInicioFija && 
+    c.horaFin > horaInicioFija
+  );
+};
 
 </script>
 
