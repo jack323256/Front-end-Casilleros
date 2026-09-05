@@ -410,6 +410,12 @@ const laboratorios = ref([
     logo: '/logos/electronica.png', 
     icon: 'bi bi-nintendo-switch'  
   },
+  { 
+    nombre: 'Biblioteca', 
+    color: '#395a0fff', 
+    logo: '/logos/electronica.png', 
+    icon: 'bi bi-bank'  
+  },
 ])
 
 const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
