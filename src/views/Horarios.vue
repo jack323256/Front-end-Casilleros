@@ -623,7 +623,7 @@ function cancelEdit() {
   editMode.value = false
   editId.value = null
   form.value = {
-    dia: 'Lunes',
+    dia: diaSeleccionado.value, // Aquí está la corrección clave
     laboratorio: laboratorios.value[0].nombre,
     materia: '',
     grupo: '',
