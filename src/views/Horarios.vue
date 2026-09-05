@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Cabecera -->
     <div class="container-fluid px-3 px-md-4 px-lg-5 py-3 bg-light border-bottom">
       <div class="row align-items-center">
         <div class="col-12 col-md-4 text-start text-md-start mb-3 mb-md-0">
@@ -28,7 +27,6 @@
       </div>
     </div>
 
-    <!-- Indicadores de Red -->
     <div v-if="cargando" class="alert alert-info text-center mx-3 mx-md-5 mt-3 border-0 shadow-sm">
       <div class="spinner-border spinner-border-sm me-2 text-primary" role="status"></div>
       <span class="fw-bold">Sincronizando con el servidor...</span>
@@ -38,10 +36,27 @@
       <button class="btn btn-sm btn-danger fw-bold" @click="loadHorarios()">Reintentar</button>
     </div>
 
-    <!-- Tarjetas de Laboratorios -->
     <div class="container-fluid px-3 px-md-4 px-lg-5 py-4">
+      
+      <!-- BÚSQUEDA INTELIGENTE -->
+      <div class="row mb-4">
+        <div class="col-12 col-md-8 col-lg-6 mx-auto">
+          <div class="input-group input-group-lg shadow-sm">
+            <span class="input-group-text bg-white text-primary border-end-0">
+              <i class="bi bi-search"></i>
+            </span>
+            <input 
+              v-model="busquedaPrincipal" 
+              type="text" 
+              class="form-control border-start-0 ps-0" 
+              placeholder="Buscar espacio, docente, grupo o materia en curso..."
+            >
+          </div>
+        </div>
+      </div>
+
       <div class="row g-3 g-md-4">
-        <div v-for="lab in laboratorios" :key="lab.nombre" class="col-12 col-md-6 col-lg-6">
+        <div v-for="lab in laboratoriosFiltrados" :key="lab.nombre" class="col-12 col-md-6 col-lg-6">
           <div class="card shadow-sm h-100 border-0" :style="{ borderLeft: `6px solid ${lab.color}` }">
             <div class="card-header bg-white d-flex align-items-center px-3 py-2">
               <i :class="lab.icon" class="me-3 text-primary" style="font-size: 2.2rem;"></i>
@@ -101,7 +116,6 @@
           </div>
           
           <div class="modal-body p-4">
-            <!-- Pestañas -->
             <ul class="nav nav-tabs mb-4">
               <li class="nav-item">
                 <a class="nav-link fw-bold" :class="{ active: tabActiva === 'dia' }" href="#" @click.prevent="tabActiva = 'dia'">
@@ -115,7 +129,6 @@
               </li>
             </ul>
 
-            <!-- PESTAÑA 1: VISTA POR ESPACIO -->
             <div v-if="tabActiva === 'dia'">
               <div class="card mb-4 border-0 shadow-sm">
                 <div class="card-body">
@@ -175,7 +188,6 @@
               </div>
             </div>
 
-            <!-- PESTAÑA 2: GESTIÓN MASIVA Y HUECOS LIBRES -->
             <div v-if="tabActiva === 'grupo'">
               <div class="card mb-4 border-0 shadow-sm bg-light">
                 <div class="card-body d-flex gap-3 align-items-end flex-wrap">
@@ -192,7 +204,6 @@
                 </div>
               </div>
 
-              <!-- DETECTOR DE HORAS LIBRES -->
               <div v-if="grupoSeleccionado" class="mb-4">
                 <h6 class="fw-bold text-success mb-3"><i class="bi bi-clock-history me-2"></i>Horas Disponibles (Para Regularizaciones)</h6>
                 <div class="d-flex flex-wrap gap-2">
@@ -249,7 +260,6 @@
               </div>
             </div>
 
-            <!-- FORMULARIO MODAL UNIFICADO -->
             <transition name="fade">
               <div v-if="showForm" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.85); z-index: 1060;">
                 <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -271,7 +281,6 @@
                             </select>
                           </div>
                           
-                          <!-- SELECTOR UNIVERSAL DE ESPACIOS -->
                           <div class="col-12 col-md-4">
                             <label class="form-label fw-bold">Espacio (Lab / Aula)</label>
                             <select v-model="form.laboratorio" class="form-select" required>
@@ -373,6 +382,7 @@ let timer = null
 
 const cargando = ref(false)
 const errorConexion = ref(false)
+const busquedaPrincipal = ref('')
 
 const tabActiva = ref('dia')
 const grupoSeleccionado = ref('')
@@ -474,15 +484,12 @@ onMounted(() => {
 })
 onUnmounted(() => clearInterval(timer))
 
-// --- UNIFICACIÓN DE ESPACIOS (LABS + AULAS) ---
+// --- UNIFICACIÓN DE ESPACIOS ---
 const todosLosEspacios = computed(() => {
   const espaciosUnicos = new Set(horarios.value.map(c => c.laboratorio));
   laboratorios.value.forEach(l => espaciosUnicos.add(l.nombre));
-  
-  // Agregar aulas fijas por si la base está vacía y editas desde Laboratorios
   const aulasFijas = ['AU 106 Docencia III', 'AU 107 Docencia III', 'AU 108 Docencia III', 'AU 109 Docencia III', 'AU 110 Docencia III', 'AU 111 Docencia III', 'AU 406 Docencia IV', 'AU 407 Docencia IV', 'AU 408 Docencia IV', 'AU Virtual', 'Cancha Techada', 'Biblioteca'];
   aulasFijas.forEach(a => espaciosUnicos.add(a));
-
   return Array.from(espaciosUnicos).sort();
 });
 
@@ -497,8 +504,6 @@ const clasesDelGrupo = computed(() => {
       return a.horaInicio.localeCompare(b.horaInicio);
     });
 });
-
-  
 
 // --- DETECTOR DE HUECOS LIBRES ---
 function numAMinutos(timeStr) {
@@ -515,11 +520,10 @@ function minutosAStr(minutos) {
 
 const horasLibresPorDia = computed(() => {
   if (!grupoSeleccionado.value) return {};
-  const inicioJornada = 7 * 60; // 07:00
-  const finJornada = 18 * 60;   // 18:00
+  const inicioJornada = 7 * 60, finJornada = 18 * 60;
   const reporte = {};
 
-  dias.slice(0, 5).forEach(dia => { // Lunes a Viernes
+  dias.slice(0, 5).forEach(dia => { 
     const clasesDia = clasesDelGrupo.value.filter(c => c.dia === dia)
                       .sort((a, b) => numAMinutos(a.horaInicio) - numAMinutos(b.horaInicio));
     let tiempoActual = inicioJornada;
@@ -528,19 +532,13 @@ const horasLibresPorDia = computed(() => {
     clasesDia.forEach(clase => {
       const inicioClase = numAMinutos(clase.horaInicio);
       const finClase = numAMinutos(clase.horaFin);
-      
-      if (inicioClase - tiempoActual >= 30) {
-        huecos.push({ inicio: minutosAStr(tiempoActual), fin: minutosAStr(inicioClase) });
-      }
+      if (inicioClase - tiempoActual >= 30) huecos.push({ inicio: minutosAStr(tiempoActual), fin: minutosAStr(inicioClase) });
       tiempoActual = Math.max(tiempoActual, finClase);
     });
 
-    if (finJornada - tiempoActual >= 30) {
-      huecos.push({ inicio: minutosAStr(tiempoActual), fin: minutosAStr(finJornada) });
-    }
+    if (finJornada - tiempoActual >= 30) huecos.push({ inicio: minutosAStr(tiempoActual), fin: minutosAStr(finJornada) });
     reporte[dia] = huecos;
   });
-
   return reporte;
 });
 
@@ -549,6 +547,22 @@ function claseActual(labNombre) {
   const horaStr = new Date().toTimeString().slice(0, 5);
   return horarios.value.find(c => c.dia === hoy && c.laboratorio === labNombre && horaStr >= c.horaInicio && horaStr < c.horaFin) || null;
 }
+
+// --- BUSCADOR INTELIGENTE ---
+const laboratoriosFiltrados = computed(() => {
+  if (!busquedaPrincipal.value) return laboratorios.value;
+  const termino = busquedaPrincipal.value.toLowerCase();
+  return laboratorios.value.filter(lab => {
+    if (lab.nombre.toLowerCase().includes(termino)) return true;
+    const actual = claseActual(lab.nombre);
+    if (actual) {
+      if (actual.docente.toLowerCase().includes(termino)) return true;
+      if (actual.materia.toLowerCase().includes(termino)) return true;
+      if (actual.grupo.toLowerCase().includes(termino)) return true;
+    }
+    return false;
+  });
+});
 
 function progresoClase(labNombre) {
   const clase = claseActual(labNombre)
@@ -660,7 +674,6 @@ const clasesPorHora = (labNombre, horaInicioFija) => {
     c.horaFin > horaInicioFija
   );
 };
-
 </script>
 
 <style scoped>
@@ -672,6 +685,12 @@ const clasesPorHora = (labNombre, horaInicioFija) => {
 .nav-tabs .nav-link { color: #6c757d; }
 .nav-tabs .nav-link.active { color: #0d6efd; border-bottom: 3px solid #0d6efd; }
 @media (max-width: 767px) { .fs-2 { font-size: 1.8rem !important; } .fs-3 { font-size: 2rem !important; } .fs-5 { font-size: 1rem !important; } .proxima-item { min-width: 180px; } }
+@media print {
+  body * { visibility: hidden; }
+  #zona-impresion, #zona-impresion * { visibility: visible; }
+  #zona-impresion { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+  .table-bordered th, .table-bordered td { border: 2px solid black !important; font-size: 10px; padding: 8px; }
+}
 </style>
 
 
