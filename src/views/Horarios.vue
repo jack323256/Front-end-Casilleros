@@ -35,6 +35,17 @@
       </div>
     </div>
 
+    <div v-if="cargando" class="alert alert-info text-center mx-3 mx-md-5 mt-3 border-0 shadow-sm">
+      <div class="spinner-border spinner-border-sm me-2 text-primary" role="status"></div>
+      <span class="fw-bold">Despertando el servidor y cargando horarios...</span>
+    </div>
+    
+    <div v-if="errorConexion" class="alert alert-danger d-flex justify-content-between align-items-center mx-3 mx-md-5 mt-3 border-0 shadow-sm">
+      <span><i class="bi bi-exclamation-triangle-fill me-2"></i> Problema de conexión con el servidor.</span>
+      <button class="btn btn-sm btn-danger fw-bold" @click="loadHorarios()">Reintentar</button>
+    </div>
+    
+
     <div class="container-fluid px-3 px-md-4 px-lg-5 py-4">
       <div class="row g-3 g-md-4">
         <div v-for="lab in laboratorios" :key="lab.nombre" class="col-12 col-md-6 col-lg-6">
@@ -334,6 +345,9 @@ const fechaActual = ref('')
 const diaActual = ref('')
 let timer = null
 
+const cargando = ref(false)
+const errorConexion = ref(false)
+
 const laboratorios = ref([
   { nombre: 'Lab de Automatización - Pesado I', color: '#1565C0', logo: '/logos/automatizacion.png', icon: 'bi bi-cpu-fill' },
   { nombre: 'Lab de Ciencias Básicas - Pesado I', color: '#7B1FA2', logo: '/logos/ciencias.png', icon: 'bi bi-flask' },
@@ -416,12 +430,27 @@ function logoCarrera(grupo) {
   }
 }
 
-async function loadHorarios() {
+async function loadHorarios(intentos = 3) {
+  if (intentos === 3) {
+    cargando.value = true;
+    errorConexion.value = false;
+  }
+  
   try {
     const res = await axios.get(API_URL)
     horarios.value = res.data
+    cargando.value = false;
+    errorConexion.value = false;
   } catch (err) {
-    console.error('Error cargando horarios:', err)
+    console.warn(`Intento fallido. Intentos restantes: ${intentos - 1}`, err)
+    if (intentos > 1) {
+      // Espera 3 segundos antes de volver a intentar, dando tiempo a Render de despertar
+      setTimeout(() => loadHorarios(intentos - 1), 3000)
+    } else {
+      cargando.value = false;
+      errorConexion.value = true;
+      console.error('No se pudo conectar con el servidor tras varios intentos.')
+    }
   }
 }
 
