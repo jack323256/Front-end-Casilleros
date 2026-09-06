@@ -607,19 +607,33 @@ function sugerirHorario(dia, laboratorio, docente, minutosDuracion) {
   return "No hay bloques disponibles este día.";
 }
 
+  
 async function saveClase() {
   const inicioNuevo = numAMinutos(form.value.horaInicio);
   const finNuevo = numAMinutos(form.value.horaFin);
   if (inicioNuevo >= finNuevo) return alert("La hora de inicio debe ser menor a la hora de fin.");
 
   const clasesEvaluar = horarios.value.filter(c => c.dia === form.value.dia && c.id !== editId.value);
-  const choqueLugar = clasesEvaluar.find(c => form.value.laboratorio !== 'AU Virtual' && c.laboratorio === form.value.laboratorio && hayChoque(inicioNuevo, finNuevo, numAMinutos(c.horaInicio), numAMinutos(c.horaFin)));
+  
+  // 1. Exentamos 'Cubículo Tutor' (además de AU Virtual) del traslape de espacio
+  const choqueLugar = clasesEvaluar.find(c => 
+    c.laboratorio !== 'AU Virtual' && 
+    c.laboratorio !== 'Cubículo Tutor' && 
+    c.laboratorio === form.value.laboratorio && 
+    hayChoque(inicioNuevo, finNuevo, numAMinutos(c.horaInicio), numAMinutos(c.horaFin))
+  );
   
   if (choqueLugar) {
     return alert(`🚨 ERROR DE ESPACIO:\nEl ${form.value.laboratorio} ya está ocupado por el grupo ${choqueLugar.grupo} (${choqueLugar.materia}) de ${choqueLugar.horaInicio} a ${choqueLugar.horaFin}.\n💡 Sugerencia: ${sugerirHorario(form.value.dia, form.value.laboratorio, form.value.docente, finNuevo - inicioNuevo)}`);
   }
 
-  const choqueDocente = clasesEvaluar.find(c => c.docente === form.value.docente && hayChoque(inicioNuevo, finNuevo, numAMinutos(c.horaInicio), numAMinutos(c.horaFin)) && !(c.laboratorio === 'AU Virtual' && form.value.laboratorio === 'AU Virtual'));
+  // 2. Exentamos 'Cubículo Tutor' del traslape de docente si es concurrente en ese mismo espacio
+  const choqueDocente = clasesEvaluar.find(c => 
+    c.docente === form.value.docente && 
+    hayChoque(inicioNuevo, finNuevo, numAMinutos(c.horaInicio), numAMinutos(c.horaFin)) && 
+    !(c.laboratorio === 'AU Virtual' && form.value.laboratorio === 'AU Virtual') &&
+    !(c.laboratorio === 'Cubículo Tutor' && form.value.laboratorio === 'Cubículo Tutor')
+  );
   
   if (choqueDocente) {
     return alert(`🚨 ERROR DE DOCENTE:\nEl maestro ${form.value.docente} ya imparte clases en ${choqueDocente.laboratorio} de ${choqueDocente.horaInicio} a ${choqueDocente.horaFin} en este mismo día.\n💡 Sugerencia: ${sugerirHorario(form.value.dia, form.value.laboratorio, form.value.docente, finNuevo - inicioNuevo)}`);
@@ -631,6 +645,8 @@ async function saveClase() {
     cerrarFormulario();
   } catch (err) { alert('Error al guardar.'); }
 }
+
+  
 
 function editClase(clase) { form.value = { ...clase }; editMode.value = true; editId.value = clase.id; showForm.value = true; }
 
@@ -692,5 +708,7 @@ const clasesPorHora = (labNombre, horaInicioFija) => {
   .table-bordered th, .table-bordered td { border: 2px solid black !important; font-size: 10px; padding: 8px; }
 }
 </style>
+
+
 
 
