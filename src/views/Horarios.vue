@@ -393,7 +393,7 @@ const laboratorios = ref([
   { nombre: 'Lab Eléctrica - Pesado I', color: '#F57C00', logo: '/logos/electrica.png', icon: 'bi bi-lightning-charge-fill' },
   { nombre: 'Lab Electrónica - Pesado I', color: '#00695C', logo: '/logos/electronica.png', icon: 'bi bi-motherboard-fill' },
   { nombre: 'Lab Metrología - Pesado II', color: '#690035ff', logo: '/logos/reloj.png', icon: 'bi bi-stopwatch' },
-  { nombre: 'Cómputo III - Docencia II', color: '#576463ff', logo: '/logos/computadora.png', icon: 'bi bi-pc-display' },
+  { nombre: 'Lab de Cómputo Planta Alta - Docencia II', color: '#576463ff', logo: '/logos/computadora.png', icon: 'bi bi-pc-display' },
   { nombre: 'Lab Manufactura - Pesado II', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-tools' },
 ])
 
