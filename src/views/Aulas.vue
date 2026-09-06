@@ -364,6 +364,7 @@ const laboratorios = ref([
   { nombre: 'Cancha Techada', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-nintendo-switch' },
   { nombre: 'Cancha Techada 2', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-nintendo-switch' },
   { nombre: 'Biblioteca', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-bank' },
+  { nombre: 'Cubículo Tutor', color: '#395a0fff', logo: '/logos/electronica.png', icon: 'bi bi-book-half' },
 ])
 
 const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
