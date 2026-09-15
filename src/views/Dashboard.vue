@@ -284,7 +284,7 @@ const UPLOAD_URL = 'https://back-end-casilleros.onrender.com/uploads/'
 const API_URL = 'https://back-end-casilleros.onrender.com/assignments'
 
 const TOTAL_CASILLEROS = 175
-const CASILLEROS_POR_PARED = 85
+const CASILLEROS_POR_PARED = 88
 
 const assignments = ref([])
 const hasData = ref(false)
@@ -391,7 +391,8 @@ const hallwayOption = computed(() => {
   )
 
 let lockerNum = 1
-const maxCols = Math.ceil(CASILLEROS_POR_PARED / 5)  // ← Cambio aquí: 5 en lugar de 4
+// Calcula las columnas basándose en la pared que tenga más casilleros
+const maxCols = Math.ceil(Math.max(CASILLEROS_POR_PARED, TOTAL_CASILLEROS - CASILLEROS_POR_PARED) / 5)
 const columnLabels = Array.from({ length: maxCols }, (_, i) => String.fromCharCode(65 + i))
 
   // Pared superior
